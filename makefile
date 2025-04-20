@@ -7,9 +7,14 @@ CFLAGS = -O2
 SRC = $(wildcard src/*.c)
 OBJ = $(patsubst %.c,build/%.o,$(notdir $(SRC)))
 DEP = $(OBJ:%.o=%.d)
+DIR = bin/ build/
 
+all: checkdirs bin/treeeeee
 
-all: bin/treeeeee
+checkdirs: $(DIR)
+
+$(DIR):
+	mkdir $@
 
 bin/treeeeee: $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $(OBJ)
