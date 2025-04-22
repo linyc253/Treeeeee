@@ -10,6 +10,32 @@ make
 ```
 And execute by
 ```
-cd test/case/test_IO
+cd testcase/test_IO
 ../../bin/treeeeee
+```
+# Parameter file format
+The parameter file should be named as `Input_Parameter.ini`. Use `#` for comment.
+```
+[BasicSetting]
+DIM = 2                      # Dimension of the system (default: 3)
+METHOD = 1                   # Method 1:brute_force 
+                             #        2:tree_algo (default)
+PARTICLE_FILE = Initial.dat  # filename of particle file (default: Initial.dat)
+
+[Tree]
+THETA = 0.003                # Critical angle
+```
+# Particle file format
+The particle file (name should be specified in 'parameter file') must follow the format below
+```
+npart
+mass(1)
+...
+mass(npart)
+x(1),y(1),z(1)
+...
+x(npart),y(npart),z(npart)
+vx(1),vy(1),vz(1)
+...
+vx(npart),vy(npart),vz(npart)
 ```

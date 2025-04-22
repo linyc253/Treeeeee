@@ -31,7 +31,7 @@ int handler(void* user, const char* section, const char* name, const char* value
     return 1;
 }
 
-// Same as get_int, but used to read in string
+// Same as get_int, but used to read string parameter
 const char* get_string(const char* key, const char* init) {
     for (int i = 0; i < param_count; i++) {
         if (strcmp(params[i].key, key) == 0)
@@ -46,11 +46,12 @@ double get_double(const char* key, double init) {
     return val ? atof(val) : init;
 }
 
-// Read integer with parameter 'key', if not exist, then return 'init'
+// Read integer parameter named 'key', if not exist, then return 'init'
 // For example, if the file looks like
-//    [basic setting]
+//    [BasicSetting]
 //    DIM = 2
-// then you should use DIM = get_int("basic setting.DIM", 3) to parse the parameter
+// then you should use DIM = get_int("BasicSetting.DIM", 3) to parse the parameter.
+// In this case, if DIM were not found, DIM will be set to 3.
 int get_int(const char* key, int init) {
     const char* val = get_string(key, NULL);
     return val ? atoi(val) : init;
