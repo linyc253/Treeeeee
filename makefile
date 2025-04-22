@@ -2,6 +2,7 @@ CC = gcc
 CFLAGS = -O2
 #CFLAGS += -Ddebug
 #CFLAGS += -Dmpi
+#CFLAGS += -fsanitize=address -g  # useful for segmentation fault
 
 # Parse all the files
 SRC = $(wildcard src/*.c)

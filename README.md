@@ -10,5 +10,6 @@ make
 ```
 And execute by
 ```
-./bin/treeeeee < testcase/test_0.in
+cd test/case/test_IO
+../../bin/treeeeee
 ```
