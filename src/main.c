@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "force.h"
+#include "evolution.h"
 #include "parameter.h"
 #include "particle.h"
 
@@ -9,17 +9,31 @@ int main(){
 
     // Some examples about how to use get_*
     DIM = get_int("BasicSetting.DIM", 3); // global variable defined in parameter.c
-    int METHOD = get_int("BasicSetting.METHOD", 2); // local variable
-    printf("DIM = %d\n", DIM);
-    printf("METHOD  = %d\n", METHOD);
-
-    // An example demonstrates how to call a function from force.c
-    Force(0);
+    printf("Perform calculation in %d dimension\n", DIM);
 
     // Read Particle file
     Particle* P;
     int npart = Read_Particle_File(&P);
-    Write_Particle_File(P, npart, "000.dat");
+    Write_Particle_File(P, npart, "00000.dat");
+
+    // Main Calculation
+    double T_TOT = get_double("BasicSetting.T_TOT", 0.0);
+    double DT = get_double("BasicSetting.DT", 0.1);
+    double t = 0.0;
+    int step = 0;
+    while(t < T_TOT){
+        step++;
+
+        // Update P[:].x & P[:].v & P[:].f
+        int dt = Max(DT, T_TOT - t);
+        double E_tot = Evolution(P, dt);
+
+        // Write files to 00001.dat 00002.dat ... (to be finished)
+
+        t = Min(t + DT, T_TOT);
+        printf("step %d:   t = %lf  ,  Total Energy = %lf\n", step, t, E_tot);
+    }
+    
 
     free(P);
     return 0;

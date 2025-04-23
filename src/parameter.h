@@ -15,6 +15,6 @@ int handler(void* user, const char* section, const char* name, const char* value
 const char* get_string(const char* key, const char* init);
 double get_double(const char* key, double init);
 int get_int(const char* key, int init);
-void Read_Input_Parameter();
+void Read_Input_Parameter(const char* filename);
 
 #endif

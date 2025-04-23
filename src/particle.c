@@ -35,6 +35,7 @@ int Read_Particle_File(Particle** P){
         printf("Failed to read %s (detect extra text)\n", PARTICLE_FILE);
         exit(EXIT_FAILURE);
     }
+    fclose(ptr);
     printf("Read %s successfully\n", PARTICLE_FILE);
     return npart;
 }
@@ -45,4 +46,6 @@ void Write_Particle_File(Particle* P, int npart, const char* filename){
     for(int i = 0; i < npart; i++) fprintf(ptr, "%lf\n", P[i].m);
     for(int i = 0; i < npart; i++) fprintf(ptr, "%lf %lf %lf\n", P[i].x[0], P[i].x[1], P[i].x[2]);
     for(int i = 0; i < npart; i++) fprintf(ptr, "%lf %lf %lf\n", P[i].v[0], P[i].v[1], P[i].v[2]);
+    fclose(ptr);
+    return;
 }
