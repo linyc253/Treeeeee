@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "particle.h": "c",
+        "parameter.h": "c"
+    }
+}

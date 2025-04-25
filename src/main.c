@@ -23,7 +23,6 @@ int main(){
     int step = 0;
     while(t < T_TOT){
         step++;
-
         // Update P[:].x & P[:].v & P[:].f
         printf("Particle %4d: x = (%f, %f, %f)\n", step, P[0].x[0], P[0].x[1], P[0].x[2]);
         int dt = Min(DT, T_TOT - t);
