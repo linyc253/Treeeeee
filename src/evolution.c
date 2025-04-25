@@ -14,7 +14,8 @@ double Min(double a, double b){
     return b;
 }
 
-void Evolution(Particle* P, int npart, double dt) {
+void Evolution(Particle* P, int npart, double dt, double t) {
+    if (t == 0.0) total_force(P, npart);
     // (a) Drift by 0.5*dt for all particles
     for (int i = 0; i < npart; i++) vec3_add_scaled(P[i].x, P[i].x, P[i].v, 0.5 * dt);
     // (b) Kick: update velocity using force
