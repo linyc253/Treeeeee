@@ -25,9 +25,9 @@ int main(){
     while(t < T_TOT){
         step++;
         // Update P[:].x & P[:].v & P[:].f
+        double dt = Min(DT, T_TOT - t);
+        Evolution(P, npart, dt);
         printf("Step %6d: x = (%lf, %lf, %lf)\n", step, P[0].x[0], P[0].x[1], P[0].x[2]);
-        int dt = Min(DT, T_TOT - t);
-        Evolution(P, npart, DT, t);
         
 
         // Write files to 00001.dat 00002.dat ...

@@ -3,7 +3,7 @@
 
 #include "particle.h"
 
-void Evolution(Particle* P, int npart, double dt, double t);
+void Evolution(Particle* P, int npart, double dt);
 double Max(double a, double b);
 double Min(double a, double b);
 
