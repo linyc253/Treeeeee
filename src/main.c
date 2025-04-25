@@ -20,17 +20,22 @@ int main(){
     double T_TOT = get_double("BasicSetting.T_TOT", 0.0);
     double DT = get_double("BasicSetting.DT", 0.1);
     double t = 0.0;
+    int STEP_PER_OUT = get_int("BasicSetting.STEP_PER_OUT", 10);
     int step = 0;
     while(t < T_TOT){
         step++;
         // Update P[:].x & P[:].v & P[:].f
-        printf("Particle %4d: x = (%f, %f, %f)\n", step, P[0].x[0], P[0].x[1], P[0].x[2]);
+        printf("Step %6d: x = (%lf, %lf, %lf)\n", step, P[0].x[0], P[0].x[1], P[0].x[2]);
         int dt = Min(DT, T_TOT - t);
         Evolution(P, npart, DT, t);
         
 
-        // Write files to 00001.dat 00002.dat ... (to be finished)
-
+        // Write files to 00001.dat 00002.dat ...
+        if(step % STEP_PER_OUT == 0){
+            char filename[16];
+            sprintf(filename,"%05d.dat", step / STEP_PER_OUT);
+            Write_Particle_File(P, npart, filename);
+        }
         t = Min(t + DT, T_TOT);
         // printf("step %d:   t = %lf  ", step, t);
     }
