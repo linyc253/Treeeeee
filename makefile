@@ -1,8 +1,8 @@
-CC = gcc
+CC = g++
 CFLAGS = -O2
-#CFLAGS += -Ddebug
-#CFLAGS += -Dmpi
-#CFLAGS += -fsanitize=address -g  # useful for segmentation fault
+#CFLAGS += -DDEBUG
+#CFLAGS += -DMPI
+CFLAGS += -fsanitize=address -g  # useful for segmentation fault
 
 # Parse all the files
 SRC = $(wildcard src/*.c)
