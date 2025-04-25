@@ -14,22 +14,19 @@ void two_particle_force(Particle* a, Particle* b, double* force){
     double m_a = a->m;
     double m_b = b->m;
     double dx[DIM];
+    double r_sq = 0.0; // r^2
     for (int i = 0; i < DIM; i++) {
         dx[i] = a->x[i] - b->x[i];
+        r_sq += dx[i]*dx[i];
     }
 
     // calculate gravitational force (assume G = 1.0) 
-    double r = sqrt(DIM == 2? dx[0]*dx[0] + dx[1]*dx[1] : dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
     double epsilon = 1e-10;
-    double F_mag = -(m_a * m_b) / (r*r + epsilon*epsilon);
+    double F_mag = -(m_a * m_b) / pow(r_sq + epsilon*epsilon, 1.5);
 
     for (int i = 0; i < DIM; i++) {
-        force[i] = F_mag * (dx[i] / r);
+        force[i] = F_mag * dx[i];
     }
-
-    // if (DIM == 2) {
-    //     force[2] = 0.0;
-    // }
 }
 
 void total_force(Particle* p, int npart){
