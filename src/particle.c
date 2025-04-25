@@ -19,7 +19,7 @@ int Read_Particle_File(Particle** P){
     }
 
 
-    *P = malloc(npart * sizeof(Particle));
+    *P = (Particle*) malloc(npart * sizeof(Particle));
     Particle* PP = *P;
     for(int i = 0; i < npart; i++) status = fscanf(ptr, "%lf", &PP[i].m);
     for(int i = 0; i < npart; i++) status = fscanf(ptr, "%lf %lf %lf", &PP[i].x[0], &PP[i].x[1], &PP[i].x[2]);
