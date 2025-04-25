@@ -39,13 +39,13 @@ void total_force(Particle* p, int npart){
 
     double f_tmp[DIM];
     for (int i = 0; i < npart; i++) {
-        for (int j = 0; j < npart; j++) {
-            if (i == j) continue;
+        for (int j = 0; j < i; j++) {
 
             two_particle_force(&p[i], &p[j], f_tmp);
 
             for (int k = 0; k < DIM; k++) {
                 p[i].f[k] += f_tmp[k];
+                p[j].f[k] -= f_tmp[k];
             }
         }
     }
