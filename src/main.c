@@ -25,7 +25,7 @@ int main(){
         step++;
 
         // Update P[:].x & P[:].v & P[:].f
-        int dt = Max(DT, T_TOT - t);
+        int dt = Min(DT, T_TOT - t);
         double E_tot = Evolution(P, dt);
 
         // Write files to 00001.dat 00002.dat ... (to be finished)

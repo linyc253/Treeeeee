@@ -12,8 +12,12 @@ double Min(double a, double b){
     return b;
 }
 
-
-double Evolution(Particle* P, double dt){
-        // Finish this function
-        return 123.0;
+void Evolution(Particle* P, int npart, double dt) {
+    // (a) Drift by 0.5*dt for all particles
+    for (int i = 0; i < npart; i++) vec3_add_scaled(P[i].x, P[i].x, P[i].v, 0.5 * dt);
+    // (b) Kick: update velocity using force
+    total_force(P, npart);
+    for (int i = 0; i < npart; i++) vec3_add_scaled(P[i].v, P[i].v, P[i].f, dt / P[i].m);
+    // (c) Drift again by 0.5*dt
+    for (int i = 0; i < npart; i++) vec3_add_scaled(P[i].x, P[i].x, P[i].v, 0.5 * dt);
 }
