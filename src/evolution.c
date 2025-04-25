@@ -1,6 +1,8 @@
 #include "evolution.h"
 #include "parameter.h"
 #include "particle.h"
+#include "vec3.h"
+#include "force.h"
 
 double Max(double a, double b){
     if(a >= b) return a;

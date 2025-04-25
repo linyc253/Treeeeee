@@ -26,12 +26,12 @@ int main(){
 
         // Update P[:].x & P[:].v & P[:].f
         int dt = Min(DT, T_TOT - t);
-        double E_tot = Evolution(P, dt);
+        Evolution(P, npart, dt);
 
         // Write files to 00001.dat 00002.dat ... (to be finished)
 
         t = Min(t + DT, T_TOT);
-        printf("step %d:   t = %lf  ,  Total Energy = %lf\n", step, t, E_tot);
+        printf("step %d:   t = %lf  ", step, t);
     }
     
 
