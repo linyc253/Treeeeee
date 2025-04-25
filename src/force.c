@@ -21,9 +21,9 @@ void two_particle_force(Particle* a, Particle* b, double* force){
     // calculate gravitational force (assume G = 1.0)
     double r = sqrt(dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2]);
     double F_mag;
-    double epsilon = 1e-12;
+    double epsilon = 1e-10;
     if (DIM == 2 || DIM == 3) {
-        F_mag = -(m_a * m_b) / (DIM == 2 ? r + epsilon : r*r + epsilon*epsilon);
+        F_mag = -(m_a * m_b) / (r*r + epsilon*epsilon);
     } else {
         printf("Dimension error\n");
         force[0] = force[1] = force[2] = 0.0;
