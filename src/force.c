@@ -10,7 +10,10 @@ int Force(int a){
     return 0;
 }
 
-void two_particle_force(Particle* a, Particle* b, double* force){
+// Calculate gravitational force by (G = 1)
+//  force = -(a.m * b.m / (|r|^2 + epsilon^2)^{3/2}) r
+// where the vector r = a.x - b.x
+void two_particle_force(Particle* a, Particle* b, double* force, double epsilon){
     double m_a = a->m;
     double m_b = b->m;
     double dx[DIM];
@@ -21,7 +24,6 @@ void two_particle_force(Particle* a, Particle* b, double* force){
     }
 
     // calculate gravitational force (assume G = 1.0) 
-    double epsilon = 1e-10;
     double F_mag = -(m_a * m_b) / pow(r_sq + epsilon*epsilon, 1.5);
 
     for (int i = 0; i < DIM; i++) {
@@ -29,8 +31,9 @@ void two_particle_force(Particle* a, Particle* b, double* force){
     }
 }
 
+// Update p.f[:] by gravitational force (brute force)
 void total_force(Particle* p, int npart){
-    
+    double epsilon = get_double("BasicSetting.epsilon", 1e-10);
     for (int i = 0; i < npart; i++){
         for (int k = 0; k < DIM; k++) {
             p[i].f[k] = 0.0;
@@ -41,7 +44,7 @@ void total_force(Particle* p, int npart){
     for (int i = 0; i < npart; i++) {
         for (int j = 0; j < i; j++) {
 
-            two_particle_force(&p[i], &p[j], f_tmp);
+            two_particle_force(&p[i], &p[j], f_tmp, epsilon);
 
             for (int k = 0; k < DIM; k++) {
                 p[i].f[k] += f_tmp[k];

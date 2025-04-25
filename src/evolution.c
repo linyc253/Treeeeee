@@ -14,7 +14,7 @@ double Min(double a, double b){
     return b;
 }
 
-void Evolution(Particle* P, int npart, double dt, double t) {
+void Evolution(Particle* P, int npart, double dt) {
     // (a) Drift by 0.5*dt for all particles   
     for (int i = 0; i < npart; i++) {
         for (int j = 0; j < DIM; j++) {
