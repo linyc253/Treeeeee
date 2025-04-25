@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -O2
+CFLAGS = -O2 -lm
 #CFLAGS += -DDEBUG
 #CFLAGS += -DMPI
 CFLAGS += -fsanitize=address -g  # useful for segmentation fault
