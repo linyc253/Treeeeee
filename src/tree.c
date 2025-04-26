@@ -4,7 +4,9 @@
 #include "particle.h"
 #include "tree.h"
 #include "math.h"
-
+#ifdef DEBUG
+#include <sys/time.h>
+#endif
 
 Tree Initialize_Tree(Particle* P, int npart){
     Tree T;
@@ -40,6 +42,7 @@ void Initialize_Children(Node* node){
     for(int i = 0; i < 1<<DIM; i++){
         Node* newNode = (Node*) malloc(sizeof(Node));
         newNode->parent = node;
+        newNode->children = NULL;
         newNode->npart = 0;
         newNode->i = -1;
         newNode->D = node->D / 2.0;
@@ -238,17 +241,50 @@ void Zero_Force(Particle* P, int npart){
     return;
 }
 
+void Free_Tree(Node* node){
+    if(node == NULL) return;
+    if(node->children != NULL){
+        for(int i = 0; i < 1<<DIM; i++){
+            Free_Tree(node->children[i]);
+        }
+        free(node->children);
+    }
+    free(node);
+}
+
 // Main routine to calculate the tree force
 void total_force_tree(Particle* P, int npart){
     // 1. Build the Tree
+#ifdef DEBUG
+    struct timeval t0, t1;
+    gettimeofday(&t0, 0);
+#endif
     Tree T = Tree_Build(P, npart);
-
+#ifdef DEBUG
+    gettimeofday(&t1, 0);
+    printf("timeElapsed for Tree_Build(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
+#endif
     // 2. Compute the mass & center-of-mass
+#ifdef DEBUG
+    gettimeofday(&t0, 0);
+#endif
     Compute_m_and_x(T.root, P);
+#ifdef DEBUG
+    gettimeofday(&t1, 0);
+    printf("timeElapsed for Compute_m_and_x(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
+#endif
 
     // 3. Traverse the tree and calculate force
+#ifdef DEBUG
+    gettimeofday(&t0, 0);
+#endif
     Zero_Force(P, npart);
     double epsilon = get_double("BasicSetting.epsilon", 1e-10);
     double THETA = get_double("Tree.THETA", 0.01);
     for(int i = 0; i < npart; i++) Tree_Force(T.root, P, i, THETA, epsilon);
+#ifdef DEBUG
+    gettimeofday(&t1, 0);
+    printf("timeElapsed for Tree_Force(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
+#endif
+    Free_Tree(T.root);
 }
