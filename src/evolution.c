@@ -3,6 +3,7 @@
 #include "parameter.h"
 #include "particle.h"
 #include "force.h"
+#include "tree.h"
 
 double Max(double a, double b){
     if(a >= b) return a;
@@ -22,7 +23,10 @@ void Evolution(Particle* P, int npart, double dt) {
         }
     }
     // (b) Kick: update velocity using force    
-    total_force(P, npart);
+    int METHOD = get_int("BasicSetting.METHOD", 2);
+    if(METHOD == 1) total_force(P, npart);
+    else if(METHOD == 2) total_force_tree(P, npart);
+    
     for (int i = 0; i < npart; i++) {
         for (int j = 0; j < DIM; j++) {
             P[i].v[j] += P[i].f[j] * dt / P[i].m;
