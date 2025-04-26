@@ -1,6 +1,9 @@
 import numpy as np
 import random
 
+# Generation of the N particle are decoupled, which can be parallel.
+# When parallel, position need to be done (at least r[i]) before calculating velocity.
+
 # Parameters
 G = 1           # Newton's gravity constant
 N = 10          # number of total particles
@@ -19,11 +22,11 @@ y = np.empty(N)
 z = np.empty(N)
 
 for i in range(N):
-    # establish random points following DF in spherical
+    # establish random points following distribution function in spherical
     phi[i] = np.random.uniform(0, 2*np.pi)
     theta[i] = np.arccos( np.random.uniform(-1,1) )
     r[i] = a / np.sqrt( np.random.uniform(0, 1)**(-2.0 / 3.0) - 1)
-    # turn to Cartesian coordinate
+    # transform to Cartesian coordinate
     x[i] = r[i] * np.sin(theta[i]) * np.cos(phi[i])
     y[i] = r[i] * np.sin(theta[i]) * np.sin(phi[i])
     z[i] = r[i] * np.cos(theta[i])
