@@ -16,7 +16,6 @@ double Min(double a, double b){
 }
 
 void Evolution(Particle* P, int npart, double dt) {
-    total_force_tree(P, npart);
     // (a) Drift by 0.5*dt for all particles   
     for (int i = 0; i < npart; i++) {
         for (int j = 0; j < DIM; j++) {
@@ -24,7 +23,10 @@ void Evolution(Particle* P, int npart, double dt) {
         }
     }
     // (b) Kick: update velocity using force    
-    total_force(P, npart);
+    int METHOD = get_int("BasicSetting.METHOD", 2);
+    if(METHOD == 1) total_force(P, npart);
+    else if(METHOD == 2) total_force_tree(P, npart);
+    
     for (int i = 0; i < npart; i++) {
         for (int j = 0; j < DIM; j++) {
             P[i].v[j] += P[i].f[j] * dt / P[i].m;

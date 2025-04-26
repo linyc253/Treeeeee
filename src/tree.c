@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "force.h"
 #include "parameter.h"
 #include "particle.h"
 #include "tree.h"
@@ -12,14 +11,16 @@ Tree Initialize_Tree(Particle* P, int npart){
     T.root = (Node*) malloc(sizeof(Node));
     T.root->npart = 0;
     T.root->parent = NULL;
-    
+    T.root->D = 0.0;
     for (int i = 0; i < DIM; i++){
-        T.root->box_max[i] = P[0].x[i];
-        T.root->box_min[i] = P[0].x[i];
+        T.box_max[i] = P[0].x[i];
+        T.box_min[i] = P[0].x[i];
         for(int j = 1; j < npart; j++){
-            T.root->box_max[i] = fmax(T.root->box_max[i], P[j].x[i]);
-            T.root->box_min[i] = fmin(T.root->box_min[i], P[j].x[i]);
+            T.box_max[i] = fmax(T.box_max[i], P[j].x[i]);
+            T.box_min[i] = fmin(T.box_min[i], P[j].x[i]);
         }
+        T.root->D = fmax(T.root->D, T.box_max[i] - T.box_min[i]);
+        T.root->x[i] = (T.box_min[i] + T.box_max[i]) / 2.0; // temporarily set to center
     }
 
     return T;
@@ -29,7 +30,7 @@ Tree Initialize_Tree(Particle* P, int npart){
 int Which_Child(Node* node, Particle p){
     int i = 0;
     for(int j = 0; j < DIM; j++){
-        if(p.x[j] > (node->box_min[j] + node->box_max[j]) / 2.0) i += (1<<j);
+        if(p.x[j] > node->x[j]) i += (1<<j);
     }
     return i;
 }
@@ -41,16 +42,11 @@ void Initialize_Children(Node* node){
         newNode->parent = node;
         newNode->npart = 0;
         newNode->i = -1;
+        newNode->D = node->D / 2.0;
         node->children[i] = newNode;
         for(int j = 0; j < DIM; j++){
-            if((i / (1<<j)) % 2 == 0){
-                newNode->box_min[j] = node->box_min[j];
-                newNode->box_max[j] = (node->box_min[j] + node->box_max[j]) / 2.0;
-            }
-            else{
-                newNode->box_max[j] = node->box_max[j];
-                newNode->box_min[j] = (node->box_min[j] + node->box_max[j]) / 2.0;
-            }
+            if((i / (1<<j)) % 2 == 0) newNode->x[j] = node->x[j] - newNode->D / 2.0;
+            else newNode->x[j] = node->x[j] + newNode->D / 2.0;
         }
     }
 }
@@ -164,7 +160,40 @@ int Compute_m_and_x(Node* node, Particle* P){
     return 0;
 }
 
-//       function f = TreeForce(i,n)
+// Calculate gravitational force by (G = 1)
+//  a.f += -(a.m * b.m / (|r|^2 + epsilon^2)^{3/2}) r
+// where the vector r = a.x - b.x
+void add_cell_particle_force(Particle* a, Node* b, double epsilon){
+    double m_a = a->m;
+    double m_b = b->m;
+    double dx[DIM];
+    double r_sq = 0.0; // r^2
+    for (int i = 0; i < DIM; i++) {
+        dx[i] = a->x[i] - b->x[i];
+        r_sq += dx[i]*dx[i];
+    }
+
+    // calculate gravitational force (assume G = 1.0) 
+    double F_mag = -(m_a * m_b) / pow(r_sq + epsilon*epsilon, 1.5);
+
+    for (int i = 0; i < DIM; i++) {
+        a->f[i] += F_mag * dx[i];
+    }
+}
+
+// Calculate gravitational force by (G = 1)
+//  force = -(a.m * b.m / (|r|^2 + epsilon^2)^{3/2}) r
+// where the vector r = a.x - b.x
+double cell_particle_distance(Particle* a, Node* b){
+    double r_sq = 0.0; // r^2
+    for (int i = 0; i < DIM; i++) {
+        double dx = a->x[i] - b->x[i];
+        r_sq += dx * dx;
+    }
+    return pow(r_sq, 0.5);
+}
+
+// function f = TreeForce(i,n)
 //           ... Compute gravitational force on particle i 
 //           ... due to all particles in the box at n
 //           f = 0
@@ -182,6 +211,26 @@ int Compute_m_and_x(Node* node, Particle* P){
 //                   end for
 //               end if
 //           end if
+void Tree_Force(Node* node, Particle* P, int i, double THETA, double epsilon){
+    if(node == NULL || node->i == i) return;
+    
+    if(node->npart == 1){
+        add_cell_particle_force(&P[i], node, epsilon);
+    }
+    else{
+        double r = cell_particle_distance(&P[i], node);
+        if(node->D / r < THETA){
+            add_cell_particle_force(&P[i], node, epsilon);
+        }
+        else{
+            for(int j = 0; j < 1<<DIM; j++){
+                Tree_Force(node->children[j], P, i, THETA, epsilon);
+            }
+        }
+    }
+}
+
+// Set all the force to zero
 void Zero_Force(Particle* P, int npart){
     for(int i = 0; i < npart; i++){
         for(int j = 0; j < DIM; j++) P[i].f[j] = 0.0;
@@ -189,22 +238,17 @@ void Zero_Force(Particle* P, int npart){
     return;
 }
 
-void Tree_Force(Node* node, Particle* P, int i){
-    // if(node == NULL || node->i == i) return;
-    
-    // if(node->npart == 1){
-    //     force();
-    // }
-    // else{
-
-    // }
-}
-
+// Main routine to calculate the tree force
 void total_force_tree(Particle* P, int npart){
+    // 1. Build the Tree
     Tree T = Tree_Build(P, npart);
+
+    // 2. Compute the mass & center-of-mass
     Compute_m_and_x(T.root, P);
+
+    // 3. Traverse the tree and calculate force
     Zero_Force(P, npart);
-
+    double epsilon = get_double("BasicSetting.epsilon", 1e-10);
+    double THETA = get_double("Tree.THETA", 0.01);
+    for(int i = 0; i < npart; i++) Tree_Force(T.root, P, i, THETA, epsilon);
 }
-
-

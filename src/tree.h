@@ -7,8 +7,7 @@ typedef struct node{
     struct node* parent;
     int npart;
     int i;
-    double box_min[3];
-    double box_max[3];
+    double D;
 
     double x[3];
     double m;
@@ -16,6 +15,8 @@ typedef struct node{
 
 typedef struct{
     Node* root;
+    double box_min[3];
+    double box_max[3];
 } Tree;
 
 void total_force_tree(Particle* P, int npart);
