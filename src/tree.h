@@ -18,6 +18,6 @@ typedef struct{
     Node* root;
 } Tree;
 
-Tree Tree_Build(Particle* P, int npart);
+void total_force_tree(Particle* P, int npart);
 
 #endif

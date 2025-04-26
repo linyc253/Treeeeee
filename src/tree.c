@@ -89,6 +89,19 @@ void Tree_Insert(Node* node, Particle* P, int i){
     node->npart++;
 }
 
+void Clear_Empty(Node* node){
+    // if(node->npart == 0) return
+    for(int i = 0; i < 1<<DIM; i++){
+        if(node->children[i]->npart == 0){
+            free(node->children[i]);
+            node->children[i] = NULL;
+        }
+        else if(node->children[i]->npart > 1){
+            Clear_Empty(node->children[i]);
+        }
+    }
+}
+
 // procedure QuadtreeBuild
 //      Quadtree = {empty}
 //        For i = 1 to n          ... loop over all particles
@@ -103,10 +116,95 @@ Tree Tree_Build(Particle* P, int npart){
     for (int i = 0; i < npart; i++){
         Tree_Insert(T.root, P, i);
     }
-    
+    Clear_Empty(T.root);
     return T;
 }
 
-void total_force(Particle* p, int npart)
+// function ( mass, cm ) = Compute_Mass(n)    
+//        ... Compute the mass and center of mass (cm) of 
+//        ... all the particles in the subtree rooted at n
+//        if n contains 1 particle
+//             ... the mass and cm of n are identical to 
+//             ... the particle's mass and position
+//             store ( mass, cm ) at n
+//             return ( mass, cm )
+//        else
+//             for all four children c(i) of n (i=1,2,3,4)
+//                 ( mass(i), cm(i) ) = Compute_Mass(c(i))
+//             end for
+//             mass = mass(1) + mass(2) + mass(3) + mass(4) 
+//                  ... the mass of a node is the sum of 
+//                  ... the masses of the children
+//             cm = (  mass(1)*cm(1) + mass(2)*cm(2) 
+//                   + mass(3)*cm(3) + mass(4)*cm(4)) / mass
+//                  ... the cm of a node is a weighted sum of 
+//                  ... the cm's of the children
+//             store ( mass, cm ) at n
+//             return ( mass, cm )
+//        end
+int Compute_m_and_x(Node* node, Particle* P){
+    if(node == NULL) return -1;
+    
+    if(node->npart == 1){
+        node->m = P[node->i].m;
+        for(int i = 0; i < DIM; i++) node->x[i] = P[node->i].x[i];
+    }
+    else{
+        node->m = 0.0;
+        for(int i = 0; i < DIM; i++) node->x[i] = 0.0;
+
+        for(int i = 0; i < 1<<DIM; i++){
+            if(Compute_m_and_x(node->children[i], P) != -1){
+                node->m += node->children[i]->m;
+                for(int j = 0; j < DIM; j++) node->x[j] += node->children[i]->m * node->children[i]->x[j];
+            }
+        }
+        for(int i = 0; i < DIM; i++) node->x[i] /= node->m;
+    }
+    return 0;
+}
+
+//       function f = TreeForce(i,n)
+//           ... Compute gravitational force on particle i 
+//           ... due to all particles in the box at n
+//           f = 0
+//           if n contains one particle
+//               f = force computed using formula (*) above
+//           else 
+//               r = distance from particle i to 
+//                      center of mass of particles in n
+//               D = size of box n
+//               if D/r < theta
+//                   compute f using formula (*) above
+//               else
+//                   for all children c of n
+//                       f = f + TreeForce(i,c)
+//                   end for
+//               end if
+//           end if
+void Zero_Force(Particle* P, int npart){
+    for(int i = 0; i < npart; i++){
+        for(int j = 0; j < DIM; j++) P[i].f[j] = 0.0;
+    }
+    return;
+}
+
+void Tree_Force(Node* node, Particle* P, int i){
+    // if(node == NULL || node->i == i) return;
+    
+    // if(node->npart == 1){
+    //     force();
+    // }
+    // else{
+
+    // }
+}
+
+void total_force_tree(Particle* P, int npart){
+    Tree T = Tree_Build(P, npart);
+    Compute_m_and_x(T.root, P);
+    Zero_Force(P, npart);
+
+}
 
 
