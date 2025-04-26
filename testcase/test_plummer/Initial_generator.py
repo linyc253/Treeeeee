@@ -6,7 +6,7 @@ import random
 
 # Parameters
 G = 1           # Newton's gravity constant
-N = 10          # number of total particles
+N = 10000       # number of total particles
 a = 0.375       # critical radius
 M = 1           # total mass
 
