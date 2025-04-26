@@ -3,6 +3,7 @@
 #include "parameter.h"
 #include "particle.h"
 #include "force.h"
+#include "tree.h"
 
 double Max(double a, double b){
     if(a >= b) return a;
