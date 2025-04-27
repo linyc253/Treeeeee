@@ -6,9 +6,9 @@ import random
 
 # Parameters
 G = 1           # Newton's gravity constant
-N = 10000       # number of total particles
-a = 0.375       # critical radius
-M = 1           # total mass
+N = 20000       # number of total particles
+a = 200       # critical radius
+M = 200           # total mass
 
 # Calculated quantities
 m = M/N         # mass of each particle
