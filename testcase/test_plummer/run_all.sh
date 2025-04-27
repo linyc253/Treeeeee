@@ -12,7 +12,7 @@ METHOD = 2                   # Method 1:brute_force
                              #        2:tree_algo (default)
 PARTICLE_FILE = Initial.dat  # filename of particle file (default: Initial.dat)
 N_TOT = 128                  # Number of base-level cell on each side
-T_TOT = 10                  # total evolution time
+T_TOT = 10                   # total evolution time
 DT = 0.1                     # maximal time interval
 STEP_PER_OUT = 3
 
@@ -33,6 +33,7 @@ THETA = 0.4                # Critical angle
 
 !
 ../../bin/treeeeee
+mv Final.dat 00034.dat
 
 # Plot plummer animation
-$PYTHON plot_gas.py
+$PYTHON plot_gas.py -N_f 34

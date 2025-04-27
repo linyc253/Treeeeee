@@ -1,1 +1,1 @@
-rm *.dat
+rm *.dat *.png
