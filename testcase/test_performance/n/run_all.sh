@@ -1,5 +1,5 @@
 ### You need to modify 'python' to your default python executable
-PYTHON=python
+PYTHON=python3
 
 echo "N   t1  t2" > comparison.dat
 
