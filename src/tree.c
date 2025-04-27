@@ -7,16 +7,11 @@
 #include "particle.h"
 #include "tree.h"
 #include "math.h"
-#include "dsyevc3.h"
+#include "dsyevh3.h"
 
 #ifdef DEBUG
 #include <sys/time.h>
 #endif
-
-// compare function for qsort
-int compare(const void* a, const void* b) {
-    return (*(double*)a - *(double*)b);
-  }
 
 Tree Initialize_Tree(Particle* P, int npart){
     Tree T;
@@ -215,8 +210,40 @@ int compute_quadrupole(Node* node, Particle* particles){
         }
         // compute eigenvalue of quadrupole tensor
         double eigval[3];
-        dsyevc3(node->quad_tensor, eigval);
-        qsort(eigval, 3, sizeof(double), compare);
+        double eigvec[3][3];
+        dsyevh3(node->quad_tensor, eigvec, eigval);
+        // sort in eigenvalue
+        for (int i = 0; i < 3; i++){
+            if (eigval[i] > eigval[i + 1]){
+                double temp_val = eigval[i];
+                eigval[i] = eigval[i + 1];
+                eigval[i + 1] = temp_val;
+
+                double temp_vec[3] = {eigvec[0][i], eigvec[1][i], eigvec[2][i]};
+                eigvec[0][i] = eigvec[0][i + 1];
+                eigvec[1][i] = eigvec[1][i + 1];
+                eigvec[2][i] = eigvec[2][i + 1];
+                eigvec[0][i + 1] = temp_vec[0];
+                eigvec[1][i + 1] = temp_vec[1];
+                eigvec[2][i + 1] = temp_vec[2];
+            }
+            if (i == 2){
+                i = 0;
+                double temp_val = eigval[i];
+                eigval[i] = eigval[i + 1];
+                eigval[i + 1] = temp_val;
+
+                double temp_vec[3] = {eigvec[0][i], eigvec[1][i], eigvec[2][i]};
+                eigvec[0][i] = eigvec[0][i + 1];
+                eigvec[1][i] = eigvec[1][i + 1];
+                eigvec[2][i] = eigvec[2][i + 1];
+                eigvec[0][i + 1] = temp_vec[0];
+                eigvec[1][i + 1] = temp_vec[1];
+                eigvec[2][i + 1] = temp_vec[2];
+                break;
+            }
+        }
+        
         #ifdef DEBUG
         printf("quadrupole eigenvalue = (%f, %f, %f)\n", eigval[0], eigval[1], eigval[2]);
         #endif

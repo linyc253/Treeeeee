@@ -1,12 +1,12 @@
 CC = g++
-CFLAGS = -O2
-LD_LIBS = -lm
+CFLAGS = -Wall -g -O2 
+LD_LIBS = -lm 
 CFLAGS += -DDEBUG
 # CFLAGS += -DMPI
 # CFLAGS += -fsanitize=address -g  # useful for segmentation fault
 
 # Parse all the files
-SRC = $(wildcard src/*.c)	
+SRC = $(wildcard src/*.c)
 OBJ = $(patsubst %.c,build/%.o,$(notdir $(SRC)))
 DEP = $(OBJ:%.o=%.d)
 DIR = bin/ build/
@@ -28,3 +28,4 @@ build/%.o: src/%.c
 
 clean:
 	rm build/*
+
