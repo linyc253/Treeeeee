@@ -9,7 +9,7 @@
 PYTHON=python3
 
 ### Generate data (modfy N below)
-$PYTHON Initial_generator.py -N 10000 > Initial.dat
+$PYTHON generate.py -N 10000 > Initial.dat
 
 ### Run METHOD = 2
     cat > Input_Parameter.ini<<!
@@ -33,4 +33,4 @@ mv Final.dat 00034.dat
 
 ### Plot plummer animation (N_f = n+1)
 $PYTHON plot_gas.py -N_f 35
-convert 000*.png Plummer.gif
+convert 000*.png Random.gif

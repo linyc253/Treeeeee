@@ -1,1 +1,1 @@
-rm *.dat *.png
+rm *.dat *.png Input_Parameter.ini Plummer.gif

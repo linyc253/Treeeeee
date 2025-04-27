@@ -49,9 +49,9 @@ for i in range(1, N_f):
     ax.set_zlabel('Z')
 
     # Fix the axes
-    ax.axes.set_xlim3d(left=-15000, right=15000)
-    ax.axes.set_ylim3d(bottom=-15000, top=15000)
-    ax.axes.set_zlim3d(bottom=-15000, top=15000)
+    ax.axes.set_xlim3d(left=-300, right=300)
+    ax.axes.set_ylim3d(bottom=-300, top=300)
+    ax.axes.set_zlim3d(bottom=-300, top=300)
     
 
     # Optional: set equal aspect ratio (good if your data is physical space)

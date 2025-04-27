@@ -41,7 +41,7 @@ vz = np.empty(N)
 
 for i in range(N):
     # calculate the speed by energy conservation
-    vel[i] = (2*G*M/m) * (r[i]**2 + a**2)**(-0.25)
+    vel[i] = (2*G*M/m) * (r[i]**2 + a**2)**(-0.25) * np.random.uniform(0, 1)
     # attribute the velocity direction randomly
     v_phi[i] = np.random.uniform(0, 2*np.pi)
     v_theta[i] = theta = np.arccos( np.random.uniform(-1,1) )
