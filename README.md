@@ -24,7 +24,7 @@ METHOD = 2                   # Method 1:brute_force
 PARTICLE_FILE = Initial.dat  # filename of particle file (default: Initial.dat)
 T_TOT = 0.1                  # total evolution time
 DT = 0.01                    # maximal time interval
-STEP_PER_OUT = 3
+STEP_PER_OUT = 3             # Output 00xxx.dat in every STEP_PER_OUT steps
 
 [Tree]
 THETA = 0.5                  # Critical angle
