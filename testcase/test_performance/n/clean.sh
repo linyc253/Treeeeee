@@ -1,0 +1,1 @@
+rm time.png Input_Parameter.ini *.dat log

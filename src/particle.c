@@ -46,6 +46,7 @@ void Write_Particle_File(Particle* P, int npart, const char* filename){
     for(int i = 0; i < npart; i++) fprintf(ptr, "%lf\n", P[i].m);
     for(int i = 0; i < npart; i++) fprintf(ptr, "%lf %lf %lf\n", P[i].x[0], P[i].x[1], P[i].x[2]);
     for(int i = 0; i < npart; i++) fprintf(ptr, "%lf %lf %lf\n", P[i].v[0], P[i].v[1], P[i].v[2]);
+    for(int i = 0; i < npart; i++) fprintf(ptr, "%lf %lf %lf\n", P[i].f[0], P[i].f[1], P[i].f[2]);
     fclose(ptr);
     return;
 }

@@ -3,6 +3,7 @@
 #include "evolution.h"
 #include "parameter.h"
 #include "particle.h"
+#include <sys/time.h>
 
 int main(){
     Read_Input_Parameter("Input_Parameter.ini");
@@ -14,7 +15,6 @@ int main(){
     // Read Particle file
     Particle* P;
     int npart = Read_Particle_File(&P);
-    Write_Particle_File(P, npart, "00000.dat");
 
     // Main Calculation
     double T_TOT = get_double("BasicSetting.T_TOT", 0.0);
@@ -23,24 +23,38 @@ int main(){
     int STEP_PER_OUT = get_int("BasicSetting.STEP_PER_OUT", 10);
     int step = 0;
     while(t < T_TOT){
+        struct timeval t0, t1;
+        gettimeofday(&t0, 0);
         step++;
+
         // Update P[:].x & P[:].v & P[:].f
         double dt = Min(DT, T_TOT - t);
         Evolution(P, npart, dt);
-        printf("Step %6d: x = (%lf, %lf, %lf)\n", step, P[0].x[0], P[0].x[1], P[0].x[2]);
-        
+        t = Min(t + DT + 1e-15, T_TOT);
+
+        gettimeofday(&t1, 0);
+        // Print info
+#ifdef DEBUG
+        printf("Step %5d: x = (%lf, %lf, %lf)\n", step, P[0].x[0], P[0].x[1], P[0].x[2]);
+        printf("Step %5d: f = (%lf, %lf, %lf)\n", step, P[0].f[0], P[0].f[1], P[0].f[2]);
+#endif
+        printf("Step %5d: t = %lf  timeElapsed: %lu ms\n", step, t, (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000);
+
 
         // Write files to 00001.dat 00002.dat ...
         if(step % STEP_PER_OUT == 0){
             char filename[16];
             sprintf(filename,"%05d.dat", step / STEP_PER_OUT);
             Write_Particle_File(P, npart, filename);
+            printf("Data written to %s\n", filename);
         }
-        t = Min(t + DT, T_TOT);
-        // printf("step %d:   t = %lf  ", step, t);
-    }
-    
+        
 
+    }
+
+    Write_Particle_File(P, npart, "Final.dat");
+    printf("Data written to Final.dat\n");
+    
     free(P);
     return 0;
 }
