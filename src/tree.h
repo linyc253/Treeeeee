@@ -7,10 +7,14 @@ typedef struct node{
     struct node* parent;
     int npart;
     int i;
-    double D;
+    double D; // cell size
 
     double x[3];
     double m;
+
+    // for quadrupole 
+    double quad_tensor[3][3];
+    double p2_x[3][3];
 } Node;
 
 typedef struct{

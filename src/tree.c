@@ -7,9 +7,16 @@
 #include "particle.h"
 #include "tree.h"
 #include "math.h"
+#include "dsyevc3.h"
+
 #ifdef DEBUG
 #include <sys/time.h>
 #endif
+
+// compare function for qsort
+int compare(const void* a, const void* b) {
+    return (*(double*)a - *(double*)b);
+  }
 
 Tree Initialize_Tree(Particle* P, int npart){
     Tree T;
@@ -31,7 +38,7 @@ Tree Initialize_Tree(Particle* P, int npart){
     return T;
 }
 
-
+// find belonging child for particle
 int Which_Child(Node* node, Particle p){
     int i = 0;
     for(int j = 0; j < DIM; j++){
@@ -166,6 +173,72 @@ int Compute_m_and_x(Node* node, Particle* P){
     return 0;
 }
 
+// compute quadrupole tensor and pseudoparticle positions
+#ifdef __cplusplus
+extern "C" {
+#endif
+int compute_quadrupole(Node* node, Particle* particles){
+    if(node == NULL) {
+        return -1;
+    }
+    // single particle
+    if(node->npart == 1){
+        node->m = particles[node->i].m;
+        double singlet_term = particles[node->i].m * (pow(particles[node->i].x[0], 2) + pow(particles[node->i].x[1], 2) + pow(particles[node->i].x[2], 2)) / 2;
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+                node->quad_tensor[i][j] = particles[node->i].m * particles[node->i].x[i] * particles[node->i].x[j] * 3 / 2;
+                    
+            }
+            node->quad_tensor[i][i] -= singlet_term;
+        }
+    }
+    // sum over particles
+    else{
+        // initialise
+        node->m = 0.0;
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+                node->quad_tensor[i][j] = 0;
+            }
+        }
+        // sum over all particles inside
+        for(int p_index = 0; p_index < 1<<DIM; p_index++){
+            if(compute_quadrupole(node->children[p_index], particles) != -1){
+                node->m += node->children[p_index]->m;
+                for(int i = 0; i < 3; i++) {
+                    for(int j = 0; j < 3; j++) {
+                        node->quad_tensor[i][j] += node->children[p_index]->quad_tensor[i][j];
+                    }
+                }
+            }
+        }
+        // compute eigenvalue of quadrupole tensor
+        double eigval[3];
+        dsyevc3(node->quad_tensor, eigval);
+        qsort(eigval, 3, sizeof(double), compare);
+        #ifdef DEBUG
+        printf("quadrupole eigenvalue = (%f, %f, %f)\n", eigval[0], eigval[1], eigval[2]);
+        #endif
+        double alpha = sqrt((2 * eigval[2] + eigval[1]) / node->m);
+        double beta = sqrt((eigval[2] + 2 * eigval[1]) / (3 * node->m));
+
+        node->p2_x[0][0] = 0;
+        node->p2_x[0][1] = 2 * beta;
+        node->p2_x[0][2] = 0;
+        node->p2_x[1][0] = alpha;
+        node->p2_x[1][1] = -beta;
+        node->p2_x[1][2] = 0;
+        node->p2_x[2][0] = -alpha;
+        node->p2_x[2][1] = -beta;
+        node->p2_x[2][2] = 0;
+    }
+    return 0;
+}
+#ifdef __cplusplus
+}
+#endif
+
 // Calculate gravitational force by (G = 1)
 //  a.f += -(a.m * b.m / (|r|^2 + epsilon^2)^{3/2}) r
 // where the vector r = a.x - b.x
@@ -271,6 +344,7 @@ void total_force_tree(Particle* P, int npart){
 #ifdef DEBUG
     gettimeofday(&t0, 0);
 #endif
+    compute_quadrupole(T.root, P);
     Compute_m_and_x(T.root, P);
 #ifdef DEBUG
     gettimeofday(&t1, 0);

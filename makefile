@@ -1,11 +1,12 @@
-CC = gcc
-CFLAGS = -O2 -lm
-#CFLAGS += -DDEBUG
-#CFLAGS += -DMPI
-#CFLAGS += -fsanitize=address -g  # useful for segmentation fault
+CC = g++
+CFLAGS = -O2
+LD_LIBS = -lm
+CFLAGS += -DDEBUG
+# CFLAGS += -DMPI
+# CFLAGS += -fsanitize=address -g  # useful for segmentation fault
 
 # Parse all the files
-SRC = $(wildcard src/*.c)
+SRC = $(wildcard src/*.c)	
 OBJ = $(patsubst %.c,build/%.o,$(notdir $(SRC)))
 DEP = $(OBJ:%.o=%.d)
 DIR = bin/ build/
@@ -23,7 +24,7 @@ bin/treeeeee: $(OBJ)
 -include $(DEP)
 
 build/%.o: src/%.c
-	$(CC) $(CFLAGS) -c -MMD -o $@ $<
+	$(CC) $(CFLAGS) -c -MMD -o $@ $< $(LD_LIBS)
 
 clean:
 	rm build/*
