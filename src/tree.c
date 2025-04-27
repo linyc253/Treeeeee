@@ -1,3 +1,6 @@
+// This tree algorithm is implemented by following the psuedo code from: 
+//   https://web.archive.org/web/20160510023001/http://www.eecs.berkeley.edu/~demmel/cs267/lecture26/lecture26.html
+// I preserve the psuedo code as comments for better understanding about what I was doing:)
 #include <stdlib.h>
 #include <stdio.h>
 #include "parameter.h"
