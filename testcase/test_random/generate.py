@@ -17,4 +17,4 @@ def generate_nbody_testcase(npart, mass_range=(1.0, 10.0), pos_range=(-100.0, 10
         print(f"{vx:.6f} {vy:.6f} {vz:.6f}")
 
 if __name__ == "__main__":
-    generate_nbody_testcase(npart=10000)
+    generate_nbody_testcase(npart=2000)

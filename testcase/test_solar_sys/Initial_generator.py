@@ -3,12 +3,9 @@ import random
 
 # Parameters
 G = 1           # Newton's gravity constant
-N = 2000       # number of total particles
-a = 200       # critical radius
-M = 20           # total mass
+a = 200         # critical radius
+M = 20          # total mass
 
-# Calculated quantities
-m = M/N         # mass of each particle
 
 # Generate position of N random particles following distribution
 r = np.empty(N)         # set up the spherical coordinate

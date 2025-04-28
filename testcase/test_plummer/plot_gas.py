@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # Import 3D plotting tools
 
 # Parameter
-N_f = 35
+N_f = 101
 
 # Load the file
 for i in range(1, N_f):
@@ -49,11 +49,11 @@ for i in range(1, N_f):
     ax.set_zlabel('Z')
 
     # Fix the axes
-    ax.axes.set_xlim3d(left=-15000, right=15000)
-    ax.axes.set_ylim3d(bottom=-15000, top=15000)
-    ax.axes.set_zlim3d(bottom=-15000, top=15000)
+    ax.axes.set_xlim3d(left=-500, right=500)
+    ax.axes.set_ylim3d(bottom=-500, top=500)
+    ax.axes.set_zlim3d(bottom=-500, top=500)
     
 
     # Optional: set equal aspect ratio (good if your data is physical space)
-    ax.set_box_aspect([np.ptp(positions[:,0]), np.ptp(positions[:,1]), np.ptp(positions[:,2])])
+    ax.set_box_aspect([1,1,1])
     fig.savefig(filename+".png")

@@ -1,0 +1,1 @@
+rm *.dat *.png Solar_sys.gif
