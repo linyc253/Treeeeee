@@ -13,7 +13,6 @@ typedef struct node{
     double m;
 
     // for quadrupole 
-    double quad_tensor[3][3];
     double p2_x[3][3];
 } Node;
 

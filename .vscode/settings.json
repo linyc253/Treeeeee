@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "dsyevh3.h": "c"
+        "dsyevh3.h": "c",
+        "parameter.h": "c",
+        "random": "c",
+        "cmath": "c"
     }
 }

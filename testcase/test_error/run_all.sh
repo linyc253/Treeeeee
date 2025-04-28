@@ -37,6 +37,7 @@ STEP_PER_OUT = 3
 
 [Tree]
 THETA = $THETA               # Critical angle
+POLES = 2
 !
 ../../bin/treeeeee
 echo  -n "$THETA  " >> comparison.dat
