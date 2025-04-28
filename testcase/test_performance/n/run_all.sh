@@ -41,10 +41,13 @@ STEP_PER_OUT = 3
 
 [Tree]
 THETA = 0.5               # Critical angle
+POLES = 2
 !
 ../../../bin/treeeeee > log
 $PYTHON parse_time.py >> comparison.dat
 echo "" >> comparison.dat
+
+
 done
 
 # Plot error vs THETA
