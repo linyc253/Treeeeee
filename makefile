@@ -1,7 +1,7 @@
 CC = g++
 CFLAGS = -Wall -g -O2 
 LD_LIBS = -lm 
-# CFLAGS += -DDEBUG
+CFLAGS += -DDEBUG
 # CFLAGS += -DMPI
 
 # for debugging segmentation fault

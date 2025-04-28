@@ -224,11 +224,11 @@ int compute_quadrupole(Node* node, Particle* particles){
         double eigval[3];
         double eigvec[3][3];
         dsyevh3(quad_tensor, eigvec, eigval);
-        #ifdef DEBUG
-        printf("eigenvector unsorted = \n(%f, %f, %f)\n(%f, %f, %f)\n(%f, %f, %f)\n", eigvec[0][0], eigvec[0][1], eigvec[0][2],
-                                                                                      eigvec[1][0], eigvec[1][1], eigvec[1][2],
-                                                                                      eigvec[2][0], eigvec[2][1], eigvec[2][2]);
-        #endif
+        // #ifdef DEBUG
+        // printf("eigenvector unsorted = \n(%f, %f, %f)\n(%f, %f, %f)\n(%f, %f, %f)\n", eigvec[0][0], eigvec[0][1], eigvec[0][2],
+        //                                                                               eigvec[1][0], eigvec[1][1], eigvec[1][2],
+        //                                                                               eigvec[2][0], eigvec[2][1], eigvec[2][2]);
+        // #endif
 
         // sort in eigenvalue
         for (int i = 0; i < 3; i++){
