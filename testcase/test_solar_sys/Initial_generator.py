@@ -3,52 +3,37 @@ import random
 
 # Parameters
 G = 1           # Newton's gravity constant
-a = 200         # critical radius
-M = 20          # total mass
+N = 5           # number of planets
+M = 30000       # mass of the sun
 
+# Generate masses of N planets
+m = np.zeros(N+1)
+for i in range(N):
+    m[i] = np.random.uniform(1, 100.0)
+m[-1] = M
 
-# Generate position of N random particles following distribution
-r = np.empty(N)         # set up the spherical coordinate
-theta = np.empty(N)
-phi = np.empty(N)
-x = np.empty(N)         # set up the Cartesian coordinate 
-y = np.empty(N)
-z = np.empty(N)
+# Generate position of N planets
+x = np.zeros(N+1)         # set up the Cartesian coordinate 
+y = np.zeros(N+1)
+z = np.zeros(N+1)
 
 for i in range(N):
-    # establish random points following distribution function in spherical
-    phi[i] = np.random.uniform(0, 2*np.pi)
-    theta[i] = np.arccos( np.random.uniform(-1,1) )
-    r[i] = a / np.sqrt( np.random.uniform(0, 1)**(-2.0 / 3.0) - 1)
-    # transform to Cartesian coordinate
-    x[i] = r[i] * np.sin(theta[i]) * np.cos(phi[i])
-    y[i] = r[i] * np.sin(theta[i]) * np.sin(phi[i])
-    z[i] = r[i] * np.cos(theta[i])
+    x[i] = np.random.uniform(1, 30.0)
 
-# Generate the velocity of the N particles by energy conservation
-vel = np.empty(N)       # set up spherical coordinate in velocity space
-v_theta = np.empty(N)
-v_phi = np.empty(N)
-vx = np.empty(N)        # Cartesian coordinate in velocity space
-vy = np.empty(N)
-vz = np.empty(N)
+# Generate the velocity of N planets
+vx = np.zeros(N+1)        # Cartesian coordinate in velocity space
+vy = np.zeros(N+1)
+vz = np.zeros(N+1)
 
 for i in range(N):
     # calculate the speed by energy conservation
-    vel[i] = (2*G*M/m) * (r[i]**2 + a**2)**(-0.25) * np.random.uniform(0, 1)
-    # attribute the velocity direction randomly
-    v_phi[i] = np.random.uniform(0, 2*np.pi)
-    v_theta[i] = theta = np.arccos( np.random.uniform(-1,1) )
-    # turn to Cartesian coordinate in velocity space
-    vx[i] = vel[i] * np.sin(v_theta[i]) * np.cos(v_phi[i])
-    vy[i] = vel[i] * np.sin(v_theta[i]) * np.sin(v_phi[i])
-    vz[i] = vel[i] * np.cos(v_theta[i])
-
+    vy[i] = (G*M**2/(M+m[i])/x[i])**0.5 * (1 + 0.2 * np.random.uniform(0, 1))
+    
 # Print the result formally
-print(N)
-for i in range(N):
-    print(m)
-for i in range(N):
+print(N+1)
+for i in range(N+1):
+    print(m[i])
+for i in range(N+1):
     print('%12f %13f %14f' % (x[i], y[i], z[i]))
-for i in range(N):
+for i in range(N+1):
     print('%15f %16f %17f' % (vx[i], vy[i], vz[i]))
