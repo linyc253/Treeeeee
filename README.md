@@ -28,18 +28,20 @@ STEP_PER_OUT = 3             # Output 00xxx.dat in every STEP_PER_OUT steps
 
 [Tree]
 THETA = 0.5                  # Critical angle
+POLES = 1                    # 1: dipole (centre of mass)
+                             # 2: quadrupole (3 pseudo-particles)
 ```
 # Particle file format
 The particle file (filename should be specified in `Input_Parameter.ini`) must follow the format below
 ```
-npart
-mass(1)
+n_particles                                   # number of particles
+mass(1)                                       # n_particles lines of masses
 ...
-mass(npart)
-x(1),y(1),z(1)
+mass(n_particles)
+x(1),y(1),z(1)                                # n_particles lines of initial positions
 ...
-x(npart),y(npart),z(npart)
-vx(1),vy(1),vz(1)
+x(n_particles),y(n_particles),z(n_particles)
+vx(1),vy(1),vz(1)                             # n_particles lines of initial velocities
 ...
-vx(npart),vy(npart),vz(npart)
+vx(n_particles),vy(n_particles),vz(n_particles)
 ```
