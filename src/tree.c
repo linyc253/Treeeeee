@@ -198,11 +198,11 @@ int compute_quadrupole(Node* node, Particle* particles){
         for(int p_index = 0; p_index < 1<<DIM; p_index++) {
             Node* child = node->children[p_index];
             if(compute_quadrupole(child, particles) != -1){
-                #ifdef DEBUG
-                printf("child quadrupole = \n(%f, %f, %f)\n(%f, %f, %f)\n(%f, %f, %f)\n", child->p2_x[0][0], child->p2_x[0][1], child->p2_x[0][2],
-                    child->p2_x[1][0], child->p2_x[1][1], child->p2_x[1][2],
-                    child->p2_x[2][0], child->p2_x[2][1], child->p2_x[2][2]);
-                #endif                
+                // #ifdef DEBUG
+                // printf("child quadrupole = \n(%f, %f, %f)\n(%f, %f, %f)\n(%f, %f, %f)\n", child->p2_x[0][0], child->p2_x[0][1], child->p2_x[0][2],
+                //     child->p2_x[1][0], child->p2_x[1][1], child->p2_x[1][2],
+                //     child->p2_x[2][0], child->p2_x[2][1], child->p2_x[2][2]);
+                // #endif                
                 for (int pp = 0; pp < 3; pp++) {
                     double r[3] = { child->p2_x[pp][0] - node->x[0], child->p2_x[pp][1] - node->x[1], child->p2_x[pp][2] - node->x[2] };
                     double singlet = child->m / 3 / 2 * (pow(r[0], 2) + pow(r[1], 2) + pow(r[2], 2));
@@ -215,11 +215,11 @@ int compute_quadrupole(Node* node, Particle* particles){
                 }
             }
         }
-        #ifdef DEBUG
-        printf("quadrupole tensor = \n(%f, %f, %f)\n(%f, %f, %f)\n(%f, %f, %f)\n", quad_tensor[0][0], quad_tensor[0][1], quad_tensor[0][2],
-            quad_tensor[1][0], quad_tensor[1][1], quad_tensor[1][2],
-            quad_tensor[2][0], quad_tensor[2][1], quad_tensor[2][2]);
-        #endif
+        // #ifdef DEBUG
+        // printf("quadrupole tensor = \n(%f, %f, %f)\n(%f, %f, %f)\n(%f, %f, %f)\n", quad_tensor[0][0], quad_tensor[0][1], quad_tensor[0][2],
+        //     quad_tensor[1][0], quad_tensor[1][1], quad_tensor[1][2],
+        //     quad_tensor[2][0], quad_tensor[2][1], quad_tensor[2][2]);
+        // #endif
         // compute eigenvalue of quadrupole tensor
         double eigval[3];
         double eigvec[3][3];
@@ -264,14 +264,14 @@ int compute_quadrupole(Node* node, Particle* particles){
             }
         }
         
-        #ifdef DEBUG
-        printf("eigenvalue = (%f, %f, %f)\n", eigval[0], eigval[1], eigval[2]);
-        #endif
-        #ifdef DEBUG
-        printf("eigenvector = \n(%f, %f, %f)\n(%f, %f, %f)\n(%f, %f, %f)\n", eigvec[0][0], eigvec[0][1], eigvec[0][2],
-                                                                                      eigvec[1][0], eigvec[1][1], eigvec[1][2],
-                                                                                      eigvec[2][0], eigvec[2][1], eigvec[2][2]);
-        #endif
+        // #ifdef DEBUG
+        // printf("eigenvalue = (%f, %f, %f)\n", eigval[0], eigval[1], eigval[2]);
+        // #endif
+        // #ifdef DEBUG
+        // printf("eigenvector = \n(%f, %f, %f)\n(%f, %f, %f)\n(%f, %f, %f)\n", eigvec[0][0], eigvec[0][1], eigvec[0][2],
+        //                                                                               eigvec[1][0], eigvec[1][1], eigvec[1][2],
+        //                                                                               eigvec[2][0], eigvec[2][1], eigvec[2][2]);
+        // #endif
 
         // alpha, beta, and check for imaginary number
         double alpha = 2 * eigval[0] + eigval[1];
@@ -289,9 +289,9 @@ int compute_quadrupole(Node* node, Particle* particles){
             beta = sqrt(beta / (3 * node->m));
         }
 
-        #ifdef DEBUG
-        printf("alpha = %f, beta = %f\n", alpha, beta);
-        #endif
+        // #ifdef DEBUG
+        // printf("alpha = %f, beta = %f\n", alpha, beta);
+        // #endif
 
         double temp_p2_x[3][3];
 
@@ -314,11 +314,11 @@ int compute_quadrupole(Node* node, Particle* particles){
                 node->p2_x[pp][i] += node->x[i];
             }
         }
-        #ifdef DEBUG
-        printf("pseudo-particle positions = \n(%f, %f, %f)\n(%f, %f, %f)\n(%f, %f, %f)\n", node->p2_x[0][0], node->p2_x[0][1], node->p2_x[0][2],
-            node->p2_x[1][0], node->p2_x[1][1], node->p2_x[1][2],
-            node->p2_x[2][0], node->p2_x[2][1], node->p2_x[2][2]);
-        #endif
+        // #ifdef DEBUG
+        // printf("pseudo-particle positions = \n(%f, %f, %f)\n(%f, %f, %f)\n(%f, %f, %f)\n", node->p2_x[0][0], node->p2_x[0][1], node->p2_x[0][2],
+        //     node->p2_x[1][0], node->p2_x[1][1], node->p2_x[1][2],
+        //     node->p2_x[2][0], node->p2_x[2][1], node->p2_x[2][2]);
+        // #endif
     }
     return 0;
 }
@@ -360,12 +360,12 @@ void add_cell_particle_force_quad(Particle* particle, Node* node, double epsilon
             particle->f[i] += -particle->m * node->m / 3 * r[i] / pow(r_norm + pow(epsilon, 2), 1.5);
         }
     }
-    #ifdef DEBUG
-    printf("force = (%f, %f, %f)\n", particle->f[0], particle->f[1], particle->f[2]);
-    for (int i = 0; i < DIM; i++) {
-        particle->f[i] = 0;
-    }
-    #endif
+    // #ifdef DEBUG
+    // printf("force = (%f, %f, %f)\n", particle->f[0], particle->f[1], particle->f[2]);
+    // for (int i = 0; i < DIM; i++) {
+    //     particle->f[i] = 0;
+    // }
+    // #endif
 }
 
 // Calculate gravitational force by (G = 1)
