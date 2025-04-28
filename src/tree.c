@@ -402,9 +402,9 @@ void Tree_Force(Node* node, Particle* P, int i, double THETA, double epsilon){
     if(node == NULL || node->i == i) return;
     
     if(node->npart == 1){
-        #ifdef DEBUG
-        add_cell_particle_force_quad(&P[i], node, epsilon);
-        #endif
+        // #ifdef DEBUG
+        // add_cell_particle_force_quad(&P[i], node, epsilon);
+        // #endif
         add_cell_particle_force(&P[i], node, epsilon);
     }
     else{
