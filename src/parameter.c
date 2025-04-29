@@ -1,4 +1,4 @@
-#include "ini.h"
+#include "../lib/ini.h"
 #include "parameter.h"
 #include <string.h>
 #include <stdlib.h>

@@ -7,7 +7,7 @@
 #include "particle.h"
 #include "tree.h"
 #include "math.h"
-#include "dsyevh3.h"
+#include "../lib/dsyevh3.h"
 
 #ifdef DEBUG
 #include <sys/time.h>
