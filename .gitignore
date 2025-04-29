@@ -2,3 +2,5 @@ mytest/*
 bin/*
 build/*
 *.dat
+*.png
+*.gif

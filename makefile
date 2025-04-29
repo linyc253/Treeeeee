@@ -1,7 +1,7 @@
-CC = g++
-CFLAGS = -Wall -g -O2 
+CC = gcc
+CFLAGS = -Wall -O2 
 LD_LIBS = -lm 
-CFLAGS += -DDEBUG
+# CFLAGS += -DDEBUG
 # CFLAGS += -DMPI
 
 # for debugging segmentation fault
@@ -21,12 +21,12 @@ $(DIR):
 	mkdir $@
 
 bin/treeeeee: $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LD_LIBS)
 
 -include $(DEP)
 
 build/%.o: src/%.c
-	$(CC) $(CFLAGS) -c -MMD -o $@ $< $(LD_LIBS)
+	$(CC) $(CFLAGS) -c -MMD -o $@ $<
 
 clean:
 	rm build/*
