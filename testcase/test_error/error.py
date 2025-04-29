@@ -21,4 +21,4 @@ force = np.array([
 
 # Follow the definition of Eq.(27) in https://iopscience.iop.org/article/10.1086/381391/fulltext/56750.text.html
 e = np.sqrt(np.mean(np.linalg.norm(force - force_std, axis=1)**2 / np.linalg.norm(force, axis=1)**2))
-print(e)
+print(e, end=' ')
