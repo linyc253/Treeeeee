@@ -3,9 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # Import 3D plotting tools
 import argparse
 
-# Parameter
-N_f = 301
-
+# Read parameter from script
 parser = argparse.ArgumentParser()
 parser.add_argument("-N", "--N_f", help = "Number of figures")
 args = parser.parse_args()

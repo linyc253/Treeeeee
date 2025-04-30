@@ -5,34 +5,38 @@ import argparse
 # Parameters
 G = 1           # Newton's gravity constant
 M = 30000       # mass of the sun
+N = 9           # number of planets
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-N", "--N", help = "Number of particles")
-args = parser.parse_args()
-N = int(args.N)
-
-# Generate masses of N planets
+# Generate masses of 9 planets
 m = np.zeros(N+1)
-for i in range(N):
-    m[i] = np.random.uniform(1, 100.0)
-m[-1] = M
+m = [0.330, 4.87, 5.97, 0.642, 1898, 568, 86.8, 102, 0.0130, 1998000]
+for i in range(N+1):
+    m[i] *= 4*np.pi**2/1998000
 
-# Generate position of N planets
-x = np.zeros(N+1)         # set up the Cartesian coordinate 
+# Generate position of 9 planets
+x = np.zeros(N+1)
 y = np.zeros(N+1)
 z = np.zeros(N+1)
+theta = np.zeros(N+1)
 
+x = [57.9, 108.2, 149.6, 228.0, 778.5, 1432.0, 2867.0, 4515.0, 5906.4, 0]
 for i in range(N):
-    x[i] = np.random.uniform(1, 30.0)
+    x[i] /= 149.6
+theta = [7.0, 3.4, 0.0, 1.8, 1.3, 2.5, 0.8, 1.8, 17.2, 0]
+for i in range(N):
+    theta[i] *= np.pi/180
+    z[i] = x[i] * np.sin(theta[i])
+    x[i] *= np.cos(theta[i])
+
 
 # Generate the velocity of N planets
-vx = np.zeros(N+1)        # Cartesian coordinate in velocity space
+vx = np.zeros(N+1)
 vy = np.zeros(N+1)
 vz = np.zeros(N+1)
 
+vy = [47.4, 35.0, 29.8, 24.1, 13.1, 9.7, 6.8, 5.4, 4.7, 0]
 for i in range(N):
-    # calculate the speed by energy conservation
-    vy[i] = (G*M**2/(M+m[i])/x[i])**0.5 * (1 + 0.2 * np.random.uniform(0, 1))
+    vy[i] *= 2*np.pi/29.8
     
 # Print the result formally
 print(N+1)
