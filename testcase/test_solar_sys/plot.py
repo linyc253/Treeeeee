@@ -1,9 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # Import 3D plotting tools
+import argparse
 
 # Parameter
-N_f = 501
+N_f = 301
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-N", "--N_f", help = "Number of figures")
+args = parser.parse_args()
+N_f = int(args.N_f)
 
 # Load the file
 for i in range(1, N_f):
@@ -51,11 +57,12 @@ for i in range(1, N_f):
     ax.set_zlabel('Z')
 
     # Fix the axes
-    ax.axes.set_xlim3d(left=-40, right=40)
-    ax.axes.set_ylim3d(bottom=-40, top=40)
-    ax.axes.set_zlim3d(bottom=-40, top=40)
+    ax.axes.set_xlim3d(left=-35, right=35)
+    ax.axes.set_ylim3d(bottom=-35, top=35)
+    ax.axes.set_zlim3d(bottom=-35, top=35)
     
 
     # Optional: set equal aspect ratio (good if your data is physical space)
     ax.set_box_aspect([1,1,1])
     fig.savefig(filename+".png")
+    plt.close()

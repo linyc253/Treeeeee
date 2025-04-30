@@ -1,10 +1,15 @@
 import numpy as np
 import random
+import argparse
 
 # Parameters
 G = 1           # Newton's gravity constant
-N = 5           # number of planets
 M = 30000       # mass of the sun
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-N", "--N", help = "Number of particles")
+args = parser.parse_args()
+N = int(args.N)
 
 # Generate masses of N planets
 m = np.zeros(N+1)

@@ -1,9 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 
 # Parameter
-N_f = 501
+N_f = 301
 G = 1
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-N", "--N_f", help = "Number of figures")
+args = parser.parse_args()
+N_f = int(args.N_f)
 
 # array
 filename = "Initial.dat"
