@@ -16,7 +16,7 @@ double Min(double a, double b){
     return b;
 }
 
-double get_dt(Particle* P, int npart, double dt_max, double eta, double epsilon) {
+double compute_dt(Particle* P, int npart, double dt_max, double eta, double epsilon) {
     double sum_a2 = 0.0;
 
     for (int i = 0; i < npart; i++) {
@@ -35,7 +35,7 @@ double get_dt(Particle* P, int npart, double dt_max, double eta, double epsilon)
 }
 
 double Evolution(Particle* P, int npart, double dt_max, double eta, double epsilon) {
-    double dt = get_dt(P, npart, dt_max, eta, epsilon);
+    double dt = compute_dt(P, npart, dt_max, eta, epsilon);
     // (a) Drift by 0.5*dt for all particles   
     for (int i = 0; i < npart; i++) {
         for (int j = 0; j < DIM; j++) {
