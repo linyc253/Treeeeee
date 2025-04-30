@@ -4,6 +4,7 @@
 #include "parameter.h"
 #include "particle.h"
 #include <sys/time.h>
+#include <math.h>
 
 int main(){
     Read_Input_Parameter("Input_Parameter.ini");
@@ -23,14 +24,16 @@ int main(){
     double EPSILON = get_double("BasicSetting.EPSILON", 1e-12);
     double t = 0.0;
     int STEP_PER_OUT = get_int("BasicSetting.STEP_PER_OUT", 10000);
+    double TIME_PER_OUT = get_double("BasicSetting.TIME_PER_OUT", 0.1);
     int step = 0;
+    int time_step = 0;
     while(t < T_TOT){
         struct timeval t0, t1;
         gettimeofday(&t0, 0);
         step++;
 
         // Update P[:].x & P[:].v & P[:].f
-        double dt = Evolution(P, npart, Min(DT, T_TOT - t), ETA, EPSILON);
+        double dt = Evolution(P, npart, Min(Min(DT, T_TOT - t), (time_step+1)*TIME_PER_OUT - t), ETA, EPSILON);
         printf("time step dt: %f\n", dt);
         t = Min(t + dt + 1e-15, T_TOT);
 
@@ -44,12 +47,20 @@ int main(){
 
 
         // Write files to 00001.dat 00002.dat ...
-        if(step % STEP_PER_OUT == 0){
-            char filename[16];
-            sprintf(filename,"%05d.dat", step / STEP_PER_OUT);
+        if (fmod(t, TIME_PER_OUT) < 1e-8) {
+            time_step++;
+            char filename[32];
+            sprintf(filename, "%05d.dat", time_step);  
             Write_Particle_File(P, npart, filename);
-            printf("Data written to %s\n", filename);
+            printf("Data written to %s (t = %.3f)\n", filename, t);
         }
+        
+        // if(step % STEP_PER_OUT == 0){
+        //     char filename[16];
+        //     sprintf(filename,"%05d.dat", step / STEP_PER_OUT);
+        //     Write_Particle_File(P, npart, filename);
+        //     printf("Data written to %s\n", filename);
+        // }
         
 
     }

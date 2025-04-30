@@ -17,22 +17,21 @@ double Min(double a, double b){
 }
 
 double get_dt(Particle* P, int npart, double dt_max, double eta, double epsilon) {
-    double sum_dt2 = 0.0;
+    double sum_a2 = 0.0;
 
     for (int i = 0; i < npart; i++) {
-        // acceleration a = f / m
-        double a_mag = 0.0;
+        // Compute |a|^2 = |f/m|^2
+        double a2 = 0.0;
         for (int j = 0; j < 3; j++) {
             double a_j = P[i].f[j] / P[i].m;
-            a_mag += a_j * a_j;
+            a2 += a_j * a_j;
         }
-        a_mag = sqrt(a_mag);
-        double dti = sqrt(2.0 * eta * epsilon / a_mag);
-        sum_dt2 += dti * dti;
+        sum_a2 += a2;
     }
 
-    double rms_dt = sqrt(sum_dt2 / npart);
-    return (rms_dt < dt_max) ? rms_dt : dt_max;
+    double rms_a = sqrt(sum_a2 / npart);
+    double dt = sqrt(2.0 * eta * epsilon / rms_a);
+    return (dt < dt_max) ? dt : dt_max;
 }
 
 double Evolution(Particle* P, int npart, double dt_max, double eta, double epsilon) {
