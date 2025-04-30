@@ -19,8 +19,10 @@ int main(){
     // Main Calculation
     double T_TOT = get_double("BasicSetting.T_TOT", 0.0);
     double DT = get_double("BasicSetting.DT", 0.1);
+    double ETA = get_double("BasicSetting.ETA", 1.0);
+    double EPSILON = get_double("BasicSetting.EPSILON", 1e-12);
     double t = 0.0;
-    int STEP_PER_OUT = get_int("BasicSetting.STEP_PER_OUT", 10);
+    int STEP_PER_OUT = get_int("BasicSetting.STEP_PER_OUT", 10000);
     int step = 0;
     while(t < T_TOT){
         struct timeval t0, t1;
@@ -28,9 +30,9 @@ int main(){
         step++;
 
         // Update P[:].x & P[:].v & P[:].f
-        double dt = Min(DT, T_TOT - t);
-        Evolution(P, npart, dt);
-        t = Min(t + DT + 1e-15, T_TOT);
+        double dt = Evolution(P, npart, Min(DT, T_TOT - t), ETA, EPSILON);
+        printf("time step dt: %f\n", dt);
+        t = Min(t + dt + 1e-15, T_TOT);
 
         gettimeofday(&t1, 0);
         // Print info
