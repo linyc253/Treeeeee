@@ -20,11 +20,9 @@ int main(){
     // Main Calculation
     double T_TOT = get_double("BasicSetting.T_TOT", 0.0);
     double DT = get_double("BasicSetting.DT", 0.1);
-    double ETA = get_double("BasicSetting.ETA", 1.0);
-    double EPSILON = get_double("BasicSetting.EPSILON", 1e-12);
     double t = 0.0;
-    int STEP_PER_OUT = get_int("BasicSetting.STEP_PER_OUT", 10000);
-    double TIME_PER_OUT = get_double("BasicSetting.TIME_PER_OUT", 0.1);
+    int STEP_PER_OUT = get_int("BasicSetting.STEP_PER_OUT", -1);
+    double TIME_PER_OUT = get_double("BasicSetting.TIME_PER_OUT", -0.1);
     int step = 0;
     int time_step = 0;
     while(t < T_TOT){
@@ -33,8 +31,8 @@ int main(){
         step++;
 
         // Update P[:].x & P[:].v & P[:].f
-        double dt = Evolution(P, npart, Min(Min(DT, T_TOT - t), (time_step+1)*TIME_PER_OUT - t), ETA, EPSILON);
-        printf("time step dt: %f\n", dt);
+        double dt = Evolution(P, npart, Min(DT, T_TOT - t));
+        //printf("time step dt: %.10f\n", dt);
         t = Min(t + dt + 1e-15, T_TOT);
 
         gettimeofday(&t1, 0);
@@ -43,24 +41,18 @@ int main(){
         printf("Step %5d: x = (%lf, %lf, %lf)\n", step, P[0].x[0], P[0].x[1], P[0].x[2]);
         printf("Step %5d: f = (%lf, %lf, %lf)\n", step, P[0].f[0], P[0].f[1], P[0].f[2]);
 #endif
-        printf("Step %5d: t = %lf  timeElapsed: %lu ms\n", step, t, (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000);
+        printf("Step %5d: t = %lf,  dt = %lf  timeElapsed: %lu ms\n", step, t, dt, (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000);
 
 
         // Write files to 00001.dat 00002.dat ...
-        if (fmod(t, TIME_PER_OUT) < 1e-8) {
+        if (((STEP_PER_OUT == -1) && (t / TIME_PER_OUT >= (double)time_step + 1.0)) || 
+            ((STEP_PER_OUT != -1) && (step % STEP_PER_OUT == 0)) ) {
             time_step++;
             char filename[32];
             sprintf(filename, "%05d.dat", time_step);  
             Write_Particle_File(P, npart, filename);
             printf("Data written to %s (t = %.3f)\n", filename, t);
         }
-        
-        // if(step % STEP_PER_OUT == 0){
-        //     char filename[16];
-        //     sprintf(filename,"%05d.dat", step / STEP_PER_OUT);
-        //     Write_Particle_File(P, npart, filename);
-        //     printf("Data written to %s\n", filename);
-        // }
         
 
     }
