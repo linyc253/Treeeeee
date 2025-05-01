@@ -5,11 +5,21 @@
 #include "particle.h"
 #include <sys/time.h>
 #include <math.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 int main(){
     Read_Input_Parameter("Input_Parameter.ini");
 
-    // Some examples about how to use get_*
+    // Create data directory (if not exist)
+    struct stat st = {0};
+    const char* OUTDIR = get_string("BasicSetting.OUTDIR", ".");
+    if (stat(OUTDIR, &st) == -1) {
+        mkdir(OUTDIR, 0700);
+    }
+
+    // Set up dimension
     DIM = get_int("BasicSetting.DIM", 3); // global variable defined in parameter.c
     printf("Perform calculation in %d dimension\n", DIM);
 
@@ -49,7 +59,7 @@ int main(){
             ((STEP_PER_OUT != -1) && (step % STEP_PER_OUT == 0)) ) {
             time_step++;
             char filename[32];
-            sprintf(filename, "%05d.dat", time_step);  
+            sprintf(filename, "%s/%05d.dat", OUTDIR, time_step);  
             Write_Particle_File(P, npart, filename);
             printf("Data written to %s (t = %.3f)\n", filename, t);
         }
