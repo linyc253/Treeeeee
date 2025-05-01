@@ -1,0 +1,1 @@
+rm *.dat *.png Input_Parameter.ini Random.gif

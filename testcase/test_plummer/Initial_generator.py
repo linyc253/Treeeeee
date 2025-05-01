@@ -3,9 +3,9 @@ import random
 
 # Parameters
 G = 1           # Newton's gravity constant
-N = 10          # number of total particles
-a = 0.375       # critical radius
-M = 1           # total mass
+N = 2000       # number of total particles
+a = 200       # critical radius
+M = 20           # total mass
 
 # Calculated quantities
 m = M/N         # mass of each particle
@@ -19,11 +19,11 @@ y = np.empty(N)
 z = np.empty(N)
 
 for i in range(N):
-    # establish random points following DF in spherical
+    # establish random points following distribution function in spherical
     phi[i] = np.random.uniform(0, 2*np.pi)
     theta[i] = np.arccos( np.random.uniform(-1,1) )
     r[i] = a / np.sqrt( np.random.uniform(0, 1)**(-2.0 / 3.0) - 1)
-    # turn to Cartesian coordinate
+    # transform to Cartesian coordinate
     x[i] = r[i] * np.sin(theta[i]) * np.cos(phi[i])
     y[i] = r[i] * np.sin(theta[i]) * np.sin(phi[i])
     z[i] = r[i] * np.cos(theta[i])
@@ -38,7 +38,7 @@ vz = np.empty(N)
 
 for i in range(N):
     # calculate the speed by energy conservation
-    vel[i] = (2*G*M/m) * (r[i]**2 + a**2)**(-0.25)
+    vel[i] = (2*G*M/m) * (r[i]**2 + a**2)**(-0.25) * np.random.uniform(0, 1)
     # attribute the velocity direction randomly
     v_phi[i] = np.random.uniform(0, 2*np.pi)
     v_theta[i] = theta = np.arccos( np.random.uniform(-1,1) )
