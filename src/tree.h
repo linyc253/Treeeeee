@@ -14,6 +14,10 @@ typedef struct node{
 
     // for quadrupole 
     double p2_x[3][3];
+
+    // for recording if it is traversed or not
+    int traversed;
+
 } Node;
 
 typedef struct{

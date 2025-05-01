@@ -1,11 +1,12 @@
 CC = gcc
-CFLAGS = -Wall -O2 
-LD_LIBS = -lm 
-# CFLAGS += -DDEBUG
-# CFLAGS += -DMPI
+CFLAGS = -Wall -O2 -fopenmp
+LD_LIBS = -lm
+CFLAGS += -DDEBUG
+CFLAGS += -DOMP
+export OMP_NUM_THREADS = 4
 
 # for debugging segmentation fault
-# CFLAGS += -fsanitize=address -g  # useful for segmentation fault
+CFLAGS += -fsanitize=address -g  # useful for segmentation fault
 
 # Parse all the files
 SRC = $(wildcard src/*.c) $(wildcard lib/*.c)
