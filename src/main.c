@@ -25,14 +25,14 @@ int main(){
     double TIME_PER_OUT = get_double("BasicSetting.TIME_PER_OUT", -0.1);
     int step = 0;
     int time_step = 0;
+    double dt = 0.0;
     while(t < T_TOT){
         struct timeval t0, t1;
         gettimeofday(&t0, 0);
         step++;
 
         // Update P[:].x & P[:].v & P[:].f
-        double dt = Evolution(P, npart, Min(DT, T_TOT - t));
-        //printf("time step dt: %.10f\n", dt);
+        dt = Evolution(P, npart, Min(DT, T_TOT - t), dt);
         t = Min(t + dt + 1e-15, T_TOT);
 
         gettimeofday(&t1, 0);
