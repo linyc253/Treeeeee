@@ -1,14 +1,27 @@
 import numpy as np
 import random
+import argparse
 
 # Parameters
-G = 1           # Newton's gravity constant
-N = 2000       # number of total particles
-a = 200       # critical radius
-M = 20           # total mass
+G = 1                       # Newton's gravity constant
+a = 20                      # critical radius
+M = 20                      # total mass
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-N", "--N", help = "Number of particles")
+args = parser.parse_args()
+N = int(args.N)             # number of total particles
 
 # Calculated quantities
-m = M/N         # mass of each particle
+m = M/N                     # mass of each particle
+
+# Calculate velocity by rejection method
+def sample_velocity(v_esc):
+    while True:
+        q = np.random.uniform(0, 1)  # trial q in [0,1]
+        gq = q**2 * (1 - q**2)**(7/2)
+        if np.random.uniform(0, 1) < gq / 0.1:  # 0.1 is approx max of g(q)
+            return q * v_esc
 
 # Generate position of N random particles following distribution
 r = np.empty(N)         # set up the spherical coordinate
@@ -29,6 +42,7 @@ for i in range(N):
     z[i] = r[i] * np.cos(theta[i])
 
 # Generate the velocity of the N particles by energy conservation
+vec = np.empty(N)
 vel = np.empty(N)       # set up spherical coordinate in velocity space
 v_theta = np.empty(N)
 v_phi = np.empty(N)
@@ -38,10 +52,11 @@ vz = np.empty(N)
 
 for i in range(N):
     # calculate the speed by energy conservation
-    vel[i] = (2*G*M/m) * (r[i]**2 + a**2)**(-0.25) * np.random.uniform(0, 1)
+    vec[i] = (2*G*M)**0.5 * (r[i]**2 + a**2)**(-0.25)
+    vel[i] = sample_velocity(vec[i])
     # attribute the velocity direction randomly
     v_phi[i] = np.random.uniform(0, 2*np.pi)
-    v_theta[i] = theta = np.arccos( np.random.uniform(-1,1) )
+    v_theta[i] = np.arccos( np.random.uniform(-1,1) )
     # turn to Cartesian coordinate in velocity space
     vx[i] = vel[i] * np.sin(v_theta[i]) * np.cos(v_phi[i])
     vy[i] = vel[i] * np.sin(v_theta[i]) * np.sin(v_phi[i])

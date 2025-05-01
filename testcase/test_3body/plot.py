@@ -3,7 +3,7 @@ import matplotlib.animation as animation
 import os
 
 # Change this
-data_dir = "data4/"  # folder with your files
+data_dir = "data2/"  # folder with your files
 
 
 

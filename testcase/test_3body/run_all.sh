@@ -1,5 +1,5 @@
 ### You need to modify 'python' to your default python executable
-PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
+PYTHON=python3
 
 # Generate data
 cat > Initial.dat<<!
