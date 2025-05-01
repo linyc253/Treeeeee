@@ -1,14 +1,14 @@
-CC = g++
-CFLAGS = -Wall -g -O2 
+CC = gcc
+CFLAGS = -Wall -O2 
 LD_LIBS = -lm 
-CFLAGS += -DDEBUG
+# CFLAGS += -DDEBUG
 # CFLAGS += -DMPI
 
 # for debugging segmentation fault
 # CFLAGS += -fsanitize=address -g  # useful for segmentation fault
 
 # Parse all the files
-SRC = $(wildcard src/*.c)
+SRC = $(wildcard src/*.c) $(wildcard lib/*.c)
 OBJ = $(patsubst %.c,build/%.o,$(notdir $(SRC)))
 DEP = $(OBJ:%.o=%.d)
 DIR = bin/ build/
@@ -21,12 +21,15 @@ $(DIR):
 	mkdir $@
 
 bin/treeeeee: $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LD_LIBS)
 
 -include $(DEP)
 
 build/%.o: src/%.c
-	$(CC) $(CFLAGS) -c -MMD -o $@ $< $(LD_LIBS)
+	$(CC) $(CFLAGS) -c -MMD -o $@ $<
+
+build/%.o: lib/%.c
+	$(CC) -O2 -c -MMD -o $@ $<
 
 clean:
 	rm build/*
