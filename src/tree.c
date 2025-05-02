@@ -24,7 +24,6 @@ Tree Initialize_Tree(Particle* P, int npart){
     T.root->npart = 0;
     T.root->parent = NULL;
     T.root->D = 0.0;
-    T.root->traversed = 0;
     for (int i = 0; i < DIM; i++){
         T.box_max[i] = P[0].x[i];
         T.box_min[i] = P[0].x[i];
@@ -57,7 +56,6 @@ void Initialize_Children(Node* node){
         newNode->npart = 0;
         newNode->i = -1;
         newNode->D = node->D / 2.0;
-        newNode->traversed = 0;
         node->children[i] = newNode;
         for(int j = 0; j < DIM; j++){
             if((i / (1<<j)) % 2 == 0) newNode->x[j] = node->x[j] - newNode->D / 2.0;
@@ -439,23 +437,34 @@ void Tree_Force(Node* node, Particle* P, int i, double THETA, double epsilon){
 }
 
 // construct interaction list
-int construct_interaction(Node* node, Particle* P, int index, double THETA, 
+void compute_interaction(Node* node, Particle* P, int index, double THETA, 
                            Node** node_list, Particle** particle_list, int* run_list, 
-                           int* current_size, int max_size, int poles){
+                           int* current_size, int max_size, int poles, double epsilon){
     if (*current_size == max_size) {
-        return -1;
+        // calculate force
+        #ifdef OMP
+        #pragma omp parallel for schedule(static)
+        #endif
+        for (int j = 0; j < max_size; j++) {
+            if (run_list[j] == 1) {
+                add_cell_particle_force(particle_list[j], node_list[j], epsilon);
+            }
+            else if(run_list[j] == 2) {
+                add_cell_particle_force_quad(particle_list[j], node_list[j], epsilon);
+            }
+            // printf("index: %d, thread number: %d / %d\n", j, omp_get_thread_num(), omp_get_num_threads());
+        }
+        *current_size = 0;
     }
-    if(node == NULL || node->i == index || node->traversed) { 
-        return 0;
+    if(node == NULL || node->i == index) { 
+        return;
     }
     if(node->npart == 1){
         // add &P[index] and node to list 
         node_list[*current_size] = node;
         particle_list[*current_size] = &P[index];
-        node->traversed = 1;
         run_list[*current_size] = 1;
         *current_size = *current_size + 1;
-        // function: add_cell_particle_force
     }
     else{
         double r = cell_particle_distance(&P[index], node);
@@ -463,22 +472,17 @@ int construct_interaction(Node* node, Particle* P, int index, double THETA,
             // add &P[index] and node to list
             node_list[*current_size] = node;
             particle_list[*current_size] = &P[index];
-            node->traversed = 1;
             run_list[*current_size] = poles;
             *current_size = *current_size + 1;
         }
         else{            
             for(int j = 0; j < (1 << DIM); j++){
-                int success = construct_interaction(node->children[j], P, index, THETA, node_list, particle_list, run_list, 
-                                                    current_size, max_size, poles);
-                if (success == -1){
-                    return -1;
-                }
+                compute_interaction(node->children[j], P, index, THETA, node_list, particle_list, run_list, 
+                                    current_size, max_size, poles, epsilon);
             }
-            node->traversed = 1;
         }
     }
-    return 0;
+    return;
 }
 
 // Set all the force to zero
@@ -492,19 +496,6 @@ void Zero_Force(Particle* P, int npart){
         }
     }
     return;
-}
-
-void reset_traversal(Node* node) {
-    if (node == NULL) {
-        return;
-    }
-    node->traversed = 0;
-    if (node->children == NULL) {
-        return;
-    }
-    for(int i = 0; i < 1 << DIM; i++) {
-        reset_traversal(node->children[i]);
-    }
 }
 
 void Free_Tree(Node* node){
@@ -533,7 +524,7 @@ void total_force_tree(Particle* P, int npart){
     printf("timeElapsed for Tree_Build(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
     #endif
     
-    // 2. Compute the mass & center-of-mass
+    // 2. Compute the mass & centre-of-mass
     #ifdef DEBUG
     gettimeofday(&t0, 0);
     #endif
@@ -562,36 +553,17 @@ void total_force_tree(Particle* P, int npart){
 
     #ifdef OMP
     // openmp computing
-    int max_size = 256;
+    int max_size = 1024;
     omp_set_num_threads(8);
     Node* node_list[max_size];
     Particle* particle_list[max_size];
     int run_list[max_size];
     int current_size = 0;
     for (int i = 0; i < npart; i++) {
-        int success = construct_interaction(T.root, P, i, THETA, node_list, particle_list, run_list, &current_size, max_size, poles);
-        // printf("success: %d\n", success);
-        if (success == -1) {
-            // calculate force
-            #pragma omp parallel for
-            for (int j = 0; j < max_size; j++) {
-                if (run_list[j] == 1) {
-                    add_cell_particle_force(particle_list[j], node_list[j], epsilon);
-                }
-                else if(run_list[j] == 2) {
-                    add_cell_particle_force_quad(particle_list[j], node_list[j], epsilon);
-                }
-                // printf("index: %d, thread number: %d / %d\n", j, omp_get_thread_num(), omp_get_num_threads());
-            }
-            
-            // reset counter and start from this particle again for untraversed nodes
-            current_size = 0;
-            i--;
-            continue;
-        }
-        reset_traversal(T.root);
+        compute_interaction(T.root, P, i, THETA, node_list, particle_list, run_list, 
+                              &current_size, max_size, poles, epsilon);
     }
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(static)
     for (int j = 0; j < current_size; j++) {
         if (run_list[j] == 1) {
             add_cell_particle_force(particle_list[j], node_list[j], epsilon);
@@ -602,6 +574,7 @@ void total_force_tree(Particle* P, int npart){
         // printf("index: %d, thread number: %d / %d\n", j, omp_get_thread_num(), omp_get_num_threads());
     }
     #endif
+
     #ifdef SERIAL
     for(int i = 0; i < npart; i++) {
         Tree_Force(T.root, P, i, THETA, epsilon);
