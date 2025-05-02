@@ -1,12 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 
 # Parameter
-N_f = 301
-G = 1
+G = 1           # Newton gravity constant
+m = 0.002
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-N", "--N_f", help = "Number of figures")
+args = parser.parse_args()
+N_f = int(args.N_f)
 
 # array
-filename = "00001.dat"
+filename = "Initial.dat"
 with open(filename) as f:
     lines = f.readlines()
 N = int(lines[0].strip())
@@ -19,9 +25,6 @@ for i in range(1, N_f):
     # Load the file
     with open(filename+".dat", 'r') as f:
         lines = f.readlines()
-
-    # Masses:
-    m = np.array([float(lines[i].strip()) for i in range(1, 1 + N)])
 
     # Positions:
     pos = np.array([
@@ -43,7 +46,7 @@ U_g = np.zeros(N_f-1)
 E_t = np.zeros(N_f-1)
 for i in range(1, N_f):
     # kinetic energy
-    E_k[i-1] = 0.5 * np.sum(m * np.sum(v[i]**2, axis=1))
+    E_k[i-1] = 0.5 * m * np.sum(np.sum(v[i]**2, axis=1))
     
     # potential energy
     dx = x[i,:,np.newaxis,0] - x[i,np.newaxis,:,0]
@@ -51,10 +54,8 @@ for i in range(1, N_f):
     dz = x[i,:,np.newaxis,2] - x[i,np.newaxis,:,2]
     r = np.sqrt(dx**2 + dy**2 + dz**2)
     
-    m_outer = m[:,np.newaxis] * m[np.newaxis,:]
-    
     upper = np.triu_indices(N, k=1)
-    U_g[i-1] = -G * np.sum(m_outer[upper] / r[upper])
+    U_g[i-1] = -G * m**2 * np.sum(1 / r[upper])
     
     # total energy
     E_t[i-1] = E_k[i-1] + U_g[i-1]
@@ -66,4 +67,19 @@ plt.plot(E_t)
 plt.title("Total Energy")
 plt.xlabel("Time")
 plt.ylabel("Energy")
-plt.savefig("Energy.png")
+# plt.ylim(bottom=0, top=E_t.max()*1.1)
+plt.savefig("Plummer_Energy.png")
+
+plt.figure()
+plt.plot(E_k)
+plt.title("Kinetic Energy")
+plt.xlabel("Time")
+plt.ylabel("Kinetic")
+plt.savefig("Plummer_Kinetic.png")
+
+plt.figure()
+plt.plot(U_g)
+plt.title("Potential Energy")
+plt.xlabel("Time")
+plt.ylabel("Potential")
+plt.savefig("Plummer_Potential.png")
