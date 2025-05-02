@@ -18,6 +18,10 @@
 #include <sys/time.h>
 #endif
 
+#define OMP_NUM_THREADS 8
+#define OMP_CHUNK 32
+#define MAX_INTERACTION_LIST_SIZE 1024
+
 Tree Initialize_Tree(Particle* P, int npart){
     Tree T;
     T.root = (Node*) malloc(sizeof(Node));
@@ -432,7 +436,7 @@ void Tree_Force(Node* node, Particle* P, int i, double THETA, double epsilon){
 
 // create grouping
 void construct_groups(Node* node) {
-    
+
 }
 
 // construct interaction list
@@ -539,7 +543,7 @@ void total_force_tree(Particle* P, int npart){
     #ifdef DEBUG
     gettimeofday(&t0, 0);
     #endif
-    // 
+
     double THETA = get_double("Tree.THETA", 0.01);
     double epsilon = get_double("BasicSetting.epsilon", 1e-10);
     Zero_Force(P, npart);
@@ -549,16 +553,15 @@ void total_force_tree(Particle* P, int npart){
 
     #ifdef OMP
     // openmp computing
-    int max_size = 1024;
-    omp_set_num_threads(8);
-    #pragma omp parallel for schedule(static)
+    omp_set_num_threads(OMP_NUM_THREADS);
+    #pragma omp parallel for schedule(dynamic, OMP_CHUNK)
     for (int i = 0; i < npart; i++) {
-        Node* node_list[max_size];
-        Particle* particle_list[max_size];
-        int run_list[max_size];
+        Node* node_list[MAX_INTERACTION_LIST_SIZE];
+        Particle* particle_list[MAX_INTERACTION_LIST_SIZE];
+        int run_list[MAX_INTERACTION_LIST_SIZE];
         int current_size = 0;
         compute_interaction(T.root, P, i, THETA, node_list, particle_list, run_list, 
-                              &current_size, max_size, poles, epsilon);
+                              &current_size, MAX_INTERACTION_LIST_SIZE, poles, epsilon);
         // calculate the remainig interactions
         for (int j = 0; j < current_size; j++) {
             if (run_list[j] == 1) {
@@ -575,13 +578,12 @@ void total_force_tree(Particle* P, int npart){
     for(int i = 0; i < npart; i++) {
         Tree_Force(T.root, P, i, THETA, epsilon);
     }
-    
     #endif
-#ifdef DEBUG
+
+    #ifdef DEBUG
     gettimeofday(&t1, 0);
     printf("timeElapsed for Tree_Force(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
-#endif
+    #endif
+
     Free_Tree(T.root);
-    // free(node_list);
-    // free(particle_list);
 }
