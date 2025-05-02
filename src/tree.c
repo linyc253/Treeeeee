@@ -174,9 +174,6 @@ int Compute_m_and_x(Node* node, Particle* P){
 }
 
 // compute quadrupole tensor and pseudoparticle positions
-#ifdef __cplusplus
-extern "C" {
-#endif
 int compute_quadrupole(Node* node, Particle* particles){
     if(node == NULL) {
         return -1;
@@ -327,9 +324,6 @@ int compute_quadrupole(Node* node, Particle* particles){
     }
     return 0;
 }
-#ifdef __cplusplus
-}
-#endif
 
 // Calculate gravitational force by (G = 1)
 //  a.f += -(a.m * b.m / (|r|^2 + epsilon^2)^{3/2}) r
@@ -436,15 +430,18 @@ void Tree_Force(Node* node, Particle* P, int i, double THETA, double epsilon){
     }
 }
 
+// create grouping
+void construct_groups(Node* node) {
+    
+}
+
 // construct interaction list
 void compute_interaction(Node* node, Particle* P, int index, double THETA, 
                            Node** node_list, Particle** particle_list, int* run_list, 
                            int* current_size, int max_size, int poles, double epsilon){
+
     if (*current_size == max_size) {
         // calculate force
-        #ifdef OMP
-        #pragma omp parallel for schedule(static)
-        #endif
         for (int j = 0; j < max_size; j++) {
             if (run_list[j] == 1) {
                 add_cell_particle_force(particle_list[j], node_list[j], epsilon);
@@ -452,7 +449,6 @@ void compute_interaction(Node* node, Particle* P, int index, double THETA,
             else if(run_list[j] == 2) {
                 add_cell_particle_force_quad(particle_list[j], node_list[j], epsilon);
             }
-            // printf("index: %d, thread number: %d / %d\n", j, omp_get_thread_num(), omp_get_num_threads());
         }
         *current_size = 0;
     }
@@ -555,23 +551,23 @@ void total_force_tree(Particle* P, int npart){
     // openmp computing
     int max_size = 1024;
     omp_set_num_threads(8);
-    Node* node_list[max_size];
-    Particle* particle_list[max_size];
-    int run_list[max_size];
-    int current_size = 0;
+    #pragma omp parallel for schedule(static)
     for (int i = 0; i < npart; i++) {
+        Node* node_list[max_size];
+        Particle* particle_list[max_size];
+        int run_list[max_size];
+        int current_size = 0;
         compute_interaction(T.root, P, i, THETA, node_list, particle_list, run_list, 
                               &current_size, max_size, poles, epsilon);
-    }
-    #pragma omp parallel for schedule(static)
-    for (int j = 0; j < current_size; j++) {
-        if (run_list[j] == 1) {
-            add_cell_particle_force(particle_list[j], node_list[j], epsilon);
+        // calculate the remainig interactions
+        for (int j = 0; j < current_size; j++) {
+            if (run_list[j] == 1) {
+                add_cell_particle_force(particle_list[j], node_list[j], epsilon);
+            }
+            else if(run_list[j] == 2) {
+                add_cell_particle_force_quad(particle_list[j], node_list[j], epsilon);
+            }
         }
-        else if(run_list[j] == 2) {
-            add_cell_particle_force_quad(particle_list[j], node_list[j], epsilon);
-        }
-        // printf("index: %d, thread number: %d / %d\n", j, omp_get_thread_num(), omp_get_num_threads());
     }
     #endif
 
@@ -579,6 +575,7 @@ void total_force_tree(Particle* P, int npart){
     for(int i = 0; i < npart; i++) {
         Tree_Force(T.root, P, i, THETA, epsilon);
     }
+    
     #endif
 #ifdef DEBUG
     gettimeofday(&t1, 0);
