@@ -46,7 +46,7 @@ NCRIT = 1
 
 [Openmp]
 THREADS = 8
-CHUNK = 2
+CHUNK = 32
 !
 ../../../bin/treeeeee > log
 $PYTHON parse_time.py >> comparison.dat

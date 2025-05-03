@@ -24,8 +24,6 @@ Tree Initialize_Tree(Particle* P, int npart){
     T.root->npart = 0;
     T.root->parent = NULL;
     T.root->D = 0.0;
-    T.root->group_index = -1;
-    T.root->id = 0;
     for (int i = 0; i < DIM; i++){
         T.box_max[i] = P[0].x[i];
         T.box_min[i] = P[0].x[i];
@@ -49,7 +47,7 @@ int Which_Child(Node* node, Particle p){
     return i;
 }
 
-void Initialize_Children(Node* node, int* id){
+void Initialize_Children(Node* node){
     node->children = (Node**) malloc((1 << DIM) * sizeof(Node*)); // bit operation: 1<<n = 2^n
     for(int i = 0; i < 1<<DIM; i++){
         Node* newNode = (Node*) malloc(sizeof(Node));
@@ -58,9 +56,6 @@ void Initialize_Children(Node* node, int* id){
         newNode->npart = 0;
         newNode->i = -1;
         newNode->D = node->D / 2.0;
-        newNode->group_index = -1;
-        newNode->id = *id;
-        *id = *id + 1;
         node->children[i] = newNode;
         for(int j = 0; j < DIM; j++){
             if((i / (1<<j)) % 2 == 0) newNode->x[j] = node->x[j] - newNode->D / 2.0;
@@ -87,14 +82,14 @@ void Initialize_Children(Node* node, int* id){
 //         ... n is a leaf 
 //         store particle i in node n
 //      endif
-void Tree_Insert(Node* node, Particle* P, int i, int* id){
+void Tree_Insert(Node* node, Particle* P, int i){
     if(node->npart > 1){
-        Tree_Insert(node->children[Which_Child(node, P[i])], P, i, id);
+        Tree_Insert(node->children[Which_Child(node, P[i])], P, i);
     }
     else if(node->npart == 1){
-        Initialize_Children(node, id);
-        Tree_Insert(node->children[Which_Child(node, P[i])], P, i, id);
-        Tree_Insert(node->children[Which_Child(node, P[node->i])], P, node->i, id);
+        Initialize_Children(node);
+        Tree_Insert(node->children[Which_Child(node, P[i])], P, i);
+        Tree_Insert(node->children[Which_Child(node, P[node->i])], P, node->i);
         node->i = -1;
     }
     else{ // node->npart == 0
@@ -127,9 +122,8 @@ void Clear_Empty(Node* node){
 //          eliminating empty leaves
 Tree Tree_Build(Particle* P, int npart){
     Tree T = Initialize_Tree(P, npart);
-    int id = 1;
     for (int i = 0; i < npart; i++){
-        Tree_Insert(T.root, P, i, &id);
+        Tree_Insert(T.root, P, i);
     }
     Clear_Empty(T.root);
     return T;
@@ -352,7 +346,6 @@ void fill_xyzm(Node* node, Particle* particles, Coord4* group_xyzm, int* particl
         }
         group_xyzm[*filled].m = particles[node->i].m;
         *filled = *filled + 1;
-        node->group_index = n_groups;
     }
     else {
         for (int i = 0; i < 1 << DIM; i++) {
@@ -368,7 +361,6 @@ void assign_group(Node* node, Particle* particles, int n_crit, int* n_groups,
         return;
     }
     if (node->npart <= n_crit) {
-        node->group_index = *n_groups;
         group_nodes[*n_groups] = node;
         
         // fill x, y, z, m to array
@@ -384,25 +376,10 @@ void assign_group(Node* node, Particle* particles, int n_crit, int* n_groups,
     }
 }
 
-// 
+// traverse and fill interaction list
 void traverse_node(Node* node, Node* group_node, Coord4* cell_xyzm, int* filled, int poles, double theta) {
-    if (node == NULL || node->group_index == group_node->group_index) {
+    if (node == NULL || node == group_node) {
         return;
-    }
-    if (node->group_index == -1) {
-        Node ancestor = *(group_node->parent);
-        while (ancestor.id > 0) {
-            if (ancestor.id == node->id) {
-                for (int j = 0; j < 1 << DIM; j++) {
-                    traverse_node(node->children[j], group_node, cell_xyzm, filled, poles, theta);
-                }
-                break;
-            }
-            ancestor = *(ancestor.parent);
-        }
-        if (ancestor.id != 0) {
-            return;
-        }
     }
     if (node->npart == 1) {
         for (int j = 0; j < 3; j++) {
