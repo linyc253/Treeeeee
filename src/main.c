@@ -10,6 +10,7 @@ int main(){
 
     // Some examples about how to use get_*
     DIM = get_int("BasicSetting.DIM", 3); // global variable defined in parameter.c
+    
     printf("Perform calculation in %d dimension\n", DIM);
 
     // Read Particle file

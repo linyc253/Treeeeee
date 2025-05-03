@@ -1,9 +1,9 @@
 Perform calculation in 3 dimension
 Read Initial.dat successfully
-timeElapsed for Tree_Build(): 14 ms
-timeElapsed for Compute_m_and_x(): 5 ms
-timeElapsed for Tree_Force(): 351 ms
-Step     1: x = (-18.935575, 36.777317, -96.446713)
-Step     1: f = (12.550669, -12.112823, 64.283273)
-Step     1: t = 0.010000  timeElapsed: 374 ms
+timeElapsed for Tree_Build(): 48 ms
+timeElapsed for Compute_m_and_x(): 15 ms
+timeElapsed for Tree_Force(): 1026 ms
+Step     1: x = (-10.173443, 84.733740, -19.498622)
+Step     1: f = (7.349834, -85.568411, 12.087170)
+Step     1: t = 0.010000  timeElapsed: 1104 ms
 Data written to Final.dat

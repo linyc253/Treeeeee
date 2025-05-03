@@ -15,6 +15,10 @@ typedef struct node{
     // for quadrupole 
     double p2_x[3][3];
 
+    //group number 
+    int group_index;
+    int id;
+
 } Node;
 
 typedef struct{
