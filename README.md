@@ -30,6 +30,11 @@ STEP_PER_OUT = 3             # Output 00xxx.dat in every STEP_PER_OUT steps
 THETA = 0.5                  # Critical angle
 POLES = 1                    # 1: dipole (centre of mass)
                              # 2: quadrupole (3 pseudo-particles)
+NCRIT = 1                    # The max number of particles in a group (for constructing interaction list)
+
+[Openmp]
+THREADS = 1                  # Number of threads
+CHUNK = 1                    # The chunk size in dynamic scheduling
 ```
 # Particle file format
 The particle file (filename should be specified in `Input_Parameter.ini`) must follow the format below

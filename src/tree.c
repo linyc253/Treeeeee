@@ -48,7 +48,7 @@ int Which_Child(Node* node, Particle p){
 }
 
 void Initialize_Children(Node* node){
-    node->children = (Node**) malloc((1<<DIM) * sizeof(Node*)); // bit operation: 1<<n = 2^n
+    node->children = (Node**) malloc((1 << DIM) * sizeof(Node*)); // bit operation: 1<<n = 2^n
     for(int i = 0; i < 1<<DIM; i++){
         Node* newNode = (Node*) malloc(sizeof(Node));
         newNode->parent = node;
@@ -101,11 +101,11 @@ void Tree_Insert(Node* node, Particle* P, int i){
 void Clear_Empty(Node* node){
     // if(node->npart == 0) return
     for(int i = 0; i < 1<<DIM; i++){
-        if(node->children[i]->npart == 0){
+        if(node->children[i]->npart == 0) {
             free(node->children[i]);
             node->children[i] = NULL;
         }
-        else if(node->children[i]->npart > 1){
+        else if(node->children[i]->npart > 1) {
             Clear_Empty(node->children[i]);
         }
     }
@@ -174,9 +174,6 @@ int Compute_m_and_x(Node* node, Particle* P){
 }
 
 // compute quadrupole tensor and pseudoparticle positions
-#ifdef __cplusplus
-extern "C" {
-#endif
 int compute_quadrupole(Node* node, Particle* particles){
     if(node == NULL) {
         return -1;
@@ -203,11 +200,6 @@ int compute_quadrupole(Node* node, Particle* particles){
         for(int p_index = 0; p_index < 1<<DIM; p_index++) {
             Node* child = node->children[p_index];
             if(compute_quadrupole(child, particles) != -1){
-                // #ifdef DEBUG
-                // printf("child quadrupole = \n(%f, %f, %f)\n(%f, %f, %f)\n(%f, %f, %f)\n", child->p2_x[0][0], child->p2_x[0][1], child->p2_x[0][2],
-                //     child->p2_x[1][0], child->p2_x[1][1], child->p2_x[1][2],
-                //     child->p2_x[2][0], child->p2_x[2][1], child->p2_x[2][2]);
-                // #endif                
                 for (int pp = 0; pp < 3; pp++) {
                     double r[3] = { child->p2_x[pp][0] - node->x[0], child->p2_x[pp][1] - node->x[1], child->p2_x[pp][2] - node->x[2] };
                     double singlet = child->m / 3 / 2 * (pow(r[0], 2) + pow(r[1], 2) + pow(r[2], 2));
@@ -220,20 +212,10 @@ int compute_quadrupole(Node* node, Particle* particles){
                 }
             }
         }
-        // #ifdef DEBUG
-        // printf("quadrupole tensor = \n(%f, %f, %f)\n(%f, %f, %f)\n(%f, %f, %f)\n", quad_tensor[0][0], quad_tensor[0][1], quad_tensor[0][2],
-        //     quad_tensor[1][0], quad_tensor[1][1], quad_tensor[1][2],
-        //     quad_tensor[2][0], quad_tensor[2][1], quad_tensor[2][2]);
-        // #endif
         // compute eigenvalue of quadrupole tensor
         double eigval[3];
         double eigvec[3][3];
         dsyevh3(quad_tensor, eigvec, eigval);
-        // #ifdef DEBUG
-        // printf("eigenvector unsorted = \n(%f, %f, %f)\n(%f, %f, %f)\n(%f, %f, %f)\n", eigvec[0][0], eigvec[0][1], eigvec[0][2],
-        //                                                                               eigvec[1][0], eigvec[1][1], eigvec[1][2],
-        //                                                                               eigvec[2][0], eigvec[2][1], eigvec[2][2]);
-        // #endif
 
         // sort in eigenvalue
         for (int i = 0; i < 3; i++){
@@ -269,15 +251,6 @@ int compute_quadrupole(Node* node, Particle* particles){
             }
         }
         
-        // #ifdef DEBUG
-        // printf("eigenvalue = (%f, %f, %f)\n", eigval[0], eigval[1], eigval[2]);
-        // #endif
-        // #ifdef DEBUG
-        // printf("eigenvector = \n(%f, %f, %f)\n(%f, %f, %f)\n(%f, %f, %f)\n", eigvec[0][0], eigvec[0][1], eigvec[0][2],
-        //                                                                               eigvec[1][0], eigvec[1][1], eigvec[1][2],
-        //                                                                               eigvec[2][0], eigvec[2][1], eigvec[2][2]);
-        // #endif
-
         // alpha, beta, and check for imaginary number
         double alpha = 2 * eigval[0] + eigval[1];
         if (fabs(alpha) < 1e-10){
@@ -293,10 +266,6 @@ int compute_quadrupole(Node* node, Particle* particles){
         else{
             beta = sqrt(beta / (3 * node->m));
         }
-
-        // #ifdef DEBUG
-        // printf("alpha = %f, beta = %f\n", alpha, beta);
-        // #endif
 
         double temp_p2_x[3][3];
 
@@ -319,177 +288,185 @@ int compute_quadrupole(Node* node, Particle* particles){
                 node->p2_x[pp][i] += node->x[i];
             }
         }
-        // #ifdef DEBUG
-        // printf("pseudo-particle positions = \n(%f, %f, %f)\n(%f, %f, %f)\n(%f, %f, %f)\n", node->p2_x[0][0], node->p2_x[0][1], node->p2_x[0][2],
-        //     node->p2_x[1][0], node->p2_x[1][1], node->p2_x[1][2],
-        //     node->p2_x[2][0], node->p2_x[2][1], node->p2_x[2][2]);
-        // #endif
     }
     return 0;
 }
-#ifdef __cplusplus
-}
-#endif
 
 // Calculate gravitational force by (G = 1)
 //  a.f += -(a.m * b.m / (|r|^2 + epsilon^2)^{3/2}) r
 // where the vector r = a.x - b.x
-void add_cell_particle_force(Particle* a, Node* b, double epsilon){
-    double m_a = a->m;
-    double m_b = b->m;
-    double dx[DIM];
-    double r_sq = 0.0; // r^2
-    for (int i = 0; i < DIM; i++) {
-        dx[i] = a->x[i] - b->x[i];
-        r_sq += dx[i]*dx[i];
+void compute_force(Coord4* group_xyzm, Coord4* cell_xyzm, Coord3* force_xyz, int number_in_group, int filled_cell, double epsilon){
+    for (int i = 0; i < number_in_group; i++) {
+        for (int j = 0; j < 3; j++) {
+            force_xyz[i].x[j] = 0;
+        }
     }
-
-    // calculate gravitational force (assume G = 1.0) 
-    double F_mag = -(m_a * m_b) / pow(r_sq + epsilon*epsilon, 1.5);
-
-    for (int i = 0; i < DIM; i++) {
-        #ifdef OMP
-        #pragma omp atomic
-        #endif
-        a->f[i] += F_mag * dx[i];
+    // particle to node 
+    for (int p = 0; p < number_in_group; p++) {
+        for (int c = 0; c < filled_cell; c++) {
+            double r[DIM];
+            double r_norm = 0;
+            for (int i = 0; i < DIM; i++) {
+                r[i] = group_xyzm[p].x[i] - cell_xyzm[c].x[i];
+                r_norm += pow(r[i], 2);
+            }
+            for (int i = 0; i < DIM; i++) {
+                force_xyz[p].x[i] += -group_xyzm[p].m * cell_xyzm[c].m * r[i] / pow(r_norm + pow(epsilon, 2), 1.5);
+            }
+        }
+    }
+    // particle to particle inside group
+    for (int p = 0; p < number_in_group; p++) {
+        for (int c = 0; c < number_in_group; c++) {
+            if (p == c) {
+                continue;
+            }
+            double r[DIM];
+            double r_norm = 0;
+            for (int i = 0; i < DIM; i++) {
+                r[i] = group_xyzm[p].x[i] - group_xyzm[c].x[i];
+                r_norm += pow(r[i], 2);
+            }
+            for (int i = 0; i < DIM; i++) {
+                force_xyz[p].x[i] += -group_xyzm[p].m * group_xyzm[c].m * r[i] / pow(r_norm + pow(epsilon, 2), 1.5);
+            }
+        }
     }
 }
 
-// calculate gravatational force using pseudo-particles
-void add_cell_particle_force_quad(Particle* particle, Node* node, double epsilon){
-    for (int pp = 0; pp < 3; pp++) {
-        double r[DIM];
-        double r_norm = 0;
-        for (int i = 0; i < DIM; i++) {
-            r[i] = particle->x[i] - node->p2_x[pp][i];
-            r_norm += pow(r[i], 2);
+// fill particle coordinates and mass to grouping array
+void fill_xyzm(Node* node, Particle* particles, Coord4* group_xyzm, int* particle_indices, int* filled, int n_groups) {
+    if (node == NULL){
+        return;
+    }
+    if (node->npart == 1) {
+        particle_indices[*filled] = node->i;
+        for (int i = 0; i < 3; i++) {
+            group_xyzm[*filled].x[i] = particles[node->i].x[i];
         }
-        for (int i = 0; i < DIM; i++) {
-            #ifdef OMP
-            #pragma omp atomic
-            #endif
-            particle->f[i] += -particle->m * node->m / 3 * r[i] / pow(r_norm + pow(epsilon, 2), 1.5);
+        group_xyzm[*filled].m = particles[node->i].m;
+        *filled = *filled + 1;
+    }
+    else {
+        for (int i = 0; i < 1 << DIM; i++) {
+            fill_xyzm(node->children[i], particles, group_xyzm, particle_indices, filled, n_groups);
         }
     }
-    // #ifdef DEBUG
-    // printf("force = (%f, %f, %f)\n", particle->f[0], particle->f[1], particle->f[2]);
-    // for (int i = 0; i < DIM; i++) {
-    //     particle->f[i] = 0;
-    // }
-    // #endif
 }
 
-// Calculate gravitational force by (G = 1)
-//  force = -(a.m * b.m / (|r|^2 + epsilon^2)^{3/2}) r
-// where the vector r = a.x - b.x
-double cell_particle_distance(Particle* a, Node* b){
-    double r_sq = 0.0; // r^2
-    for (int i = 0; i < DIM; i++) {
-        double dx = a->x[i] - b->x[i];
-        r_sq += dx * dx;
+// create grouping
+void assign_group(Node* node, Particle* particles, int n_crit, int* n_groups, 
+                  Node** group_nodes, Coord4** groups_xyzm, int* number_in_group, int** particle_indices) {
+    if (node == NULL){
+        return;
     }
-    return pow(r_sq, 0.5);
+    if (node->npart <= n_crit) {
+        group_nodes[*n_groups] = node;
+        
+        // fill x, y, z, m to array
+        int filled = 0;
+        fill_xyzm(node, particles, groups_xyzm[*n_groups], particle_indices[*n_groups], &filled, *n_groups);
+        number_in_group[*n_groups] = filled;
+        *n_groups = *n_groups + 1;
+    }
+    else {
+        for (int i = 0; i < 1 << DIM; i++) {
+            assign_group(node->children[i], particles, n_crit, n_groups, group_nodes, groups_xyzm, number_in_group, particle_indices);
+        }
+    }
 }
 
-// function f = TreeForce(i,n)
-//           ... Compute gravitational force on particle i 
-//           ... due to all particles in the box at n
-//           f = 0
-//           if n contains one particle
-//               f = force computed using formula (*) above
-//           else 
-//               r = distance from particle i to 
-//                      center of mass of particles in n
-//               D = size of box n
-//               if D/r < theta
-//                   compute f using formula (*) above
-//               else
-//                   for all children c of n
-//                       f = f + TreeForce(i,c)
-//                   end for
-//               end if
-//           end if
-void Tree_Force(Node* node, Particle* P, int i, double THETA, double epsilon){
-    if(node == NULL || node->i == i) return;
-    
-    if(node->npart == 1){
-        // #ifdef DEBUG
-        // add_cell_particle_force_quad(&P[i], node, epsilon);
-        // #endif
-        add_cell_particle_force(&P[i], node, epsilon);
+// traverse and fill interaction list
+void traverse_node(Node* node, Node* group_node, Coord4* cell_xyzm, int* filled, int poles, double theta) {
+    if (node == NULL || node == group_node) {
+        return;
     }
-    else{
-        double r = cell_particle_distance(&P[i], node);
-        if(node->D / r < THETA){
-            if (get_int("Tree.POLES", 1) == 1) {
-                add_cell_particle_force(&P[i], node, epsilon);
+    if (node->npart == 1) {
+        for (int j = 0; j < 3; j++) {
+            cell_xyzm[*filled].x[j] = node->x[j];
+        }
+        cell_xyzm[*filled].m = node->m;
+        *filled = *filled + 1;
+        return;
+    }
+
+    double r = 0;
+    for (int j = 0; j < 3; j++) {
+        r += pow(group_node->x[j] - node->x[j], 2);
+    }
+    r = sqrt(r) - sqrt((double)DIM) * (group_node->D) / 2;
+    if (node->D / r < theta && r > 0) {
+        if (poles == 1) {
+            for (int j = 0; j < 3; j++) {
+                cell_xyzm[*filled].x[j] = node->x[j];
             }
-            else if (get_int("Tree.POLES", 1) == 2) {
-                add_cell_particle_force_quad(&P[i], node, epsilon);
+            cell_xyzm[*filled].m = node->m;
+            *filled = *filled + 1;
+        }
+        else if (poles == 2) {
+            for (int pp = 0; pp < 3; pp++) {
+                for (int j = 0; j < 3; j++) {
+                    cell_xyzm[*filled].x[j] = node->p2_x[pp][j];
+                }
+                cell_xyzm[*filled].m = node->m / 3;
+                *filled = *filled + 1;
             }
         }
-        else{            
-            for(int j = 0; j < 1<<DIM; j++){
-                Tree_Force(node->children[j], P, i, THETA, epsilon);
-            }
+    }
+    else {
+        for (int j = 0; j < 1 << DIM; j++) {
+            traverse_node(node->children[j], group_node, cell_xyzm, filled, poles, theta);
         }
     }
 }
 
 // construct interaction list
-void compute_interaction(Node* node, Particle* P, int index, double THETA, 
-                           Node** node_list, Particle** particle_list, int* run_list, 
-                           int* current_size, int max_size, int poles, double epsilon){
-    if (*current_size == max_size) {
-        // calculate force
-        #ifdef OMP
-        #pragma omp parallel for schedule(static)
+void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, Node* group_node, int* particle_indices,
+                         int n_groups, int n_particles, int number_in_group, double theta, int poles, double epsilon){
+
+    if (poles == 1) {
+        Coord4 cell_xyzm[n_particles - number_in_group];
+        int filled = 0;
+        traverse_node(root, group_node, cell_xyzm, &filled, poles, theta);
+
+        Coord3 force_xyz[number_in_group];
+        #ifdef CUDA
+        // compute force using cuda device
+        #else
+        compute_force(groups_xyzm, cell_xyzm, force_xyz, number_in_group, filled, epsilon);
         #endif
-        for (int j = 0; j < max_size; j++) {
-            if (run_list[j] == 1) {
-                add_cell_particle_force(particle_list[j], node_list[j], epsilon);
-            }
-            else if(run_list[j] == 2) {
-                add_cell_particle_force_quad(particle_list[j], node_list[j], epsilon);
-            }
-            // printf("index: %d, thread number: %d / %d\n", j, omp_get_thread_num(), omp_get_num_threads());
-        }
-        *current_size = 0;
-    }
-    if(node == NULL || node->i == index) { 
-        return;
-    }
-    if(node->npart == 1){
-        // add &P[index] and node to list 
-        node_list[*current_size] = node;
-        particle_list[*current_size] = &P[index];
-        run_list[*current_size] = 1;
-        *current_size = *current_size + 1;
-    }
-    else{
-        double r = cell_particle_distance(&P[index], node);
-        if(node->D / r < THETA){
-            // add &P[index] and node to list
-            node_list[*current_size] = node;
-            particle_list[*current_size] = &P[index];
-            run_list[*current_size] = poles;
-            *current_size = *current_size + 1;
-        }
-        else{            
-            for(int j = 0; j < (1 << DIM); j++){
-                compute_interaction(node->children[j], P, index, THETA, node_list, particle_list, run_list, 
-                                    current_size, max_size, poles, epsilon);
+        for (int i = 0; i < number_in_group; i++) {
+            for (int j = 0; j < DIM; j++) {
+                particles[particle_indices[i]].f[j] += force_xyz[i].x[j];
             }
         }
+    }
+    else if (poles == 2) {
+        Coord4 cell_xyzm[3 * (n_particles - number_in_group)];
+        int filled = 0;
+        traverse_node(root, group_node, cell_xyzm, &filled, poles, theta);
+
+        Coord3 force_xyz[number_in_group];
+        #ifdef CUDA
+        // compute force using cuda device
+        #else
+        compute_force(groups_xyzm, cell_xyzm, force_xyz, number_in_group, filled, epsilon);
+        #endif
+        for (int i = 0; i < number_in_group; i++) {
+            for (int j = 0; j < DIM; j++) {
+                particles[particle_indices[i]].f[j] += force_xyz[i].x[j];
+                filled++;
+            }
+        }
+    }
+    else {
+        printf("The parameter POLES looks very funny, please don't try to break the program\n");
     }
     return;
 }
 
 // Set all the force to zero
 void Zero_Force(Particle* P, int npart){
-    #ifdef OMP
-    #pragma omp parallel for
-    #endif
     for(int i = 0; i < npart; i++){
         for(int j = 0; j < DIM; j++) { 
             P[i].f[j] = 0.0; 
@@ -511,7 +488,7 @@ void Free_Tree(Node* node){
 
 // Main routine to calculate the tree force
 void total_force_tree(Particle* P, int npart){
-    // 1. Build the Tree
+    // ---------------1. Build the Tree---------------
     #ifdef DEBUG
     struct timeval t0, t1;
     gettimeofday(&t0, 0);
@@ -519,12 +496,25 @@ void total_force_tree(Particle* P, int npart){
     
     Tree T = Tree_Build(P, npart);
     
+    // create grouping 
+    int n_crit = get_double("Tree.NCRIT", 1);
+    int n_groups = 0;
+    Coord4* groups_xyzm[npart];
+    int* particle_indices[npart];
+    int number_in_group[npart];
+    Node* group_nodes[npart];
+    for (int i = 0; i < npart; i++) {
+        groups_xyzm[i] = (Coord4*) malloc(n_crit * sizeof(Coord4));
+        particle_indices[i] = (int*) malloc((DIM + 1) * n_crit * sizeof(int));
+    }
+    assign_group(T.root, P, n_crit, &n_groups, group_nodes, groups_xyzm, number_in_group, particle_indices);
+    
     #ifdef DEBUG
     gettimeofday(&t1, 0);
     printf("timeElapsed for Tree_Build(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
     #endif
     
-    // 2. Compute the mass & centre-of-mass
+    // ---------------2. Compute the mass & centre-of-mass---------------
     #ifdef DEBUG
     gettimeofday(&t0, 0);
     #endif
@@ -539,52 +529,36 @@ void total_force_tree(Particle* P, int npart){
     printf("timeElapsed for Compute_m_and_x(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
     #endif
 
-    // 3. Traverse the tree and calculate force
+    // ---------------3. Traverse the tree and calculate force---------------
     #ifdef DEBUG
     gettimeofday(&t0, 0);
     #endif
-    // 
-    double THETA = get_double("Tree.THETA", 0.01);
-    double epsilon = get_double("BasicSetting.epsilon", 1e-10);
+
     Zero_Force(P, npart);
-    #ifdef CUDA
-    // cuda computing
-    #endif
 
+    double theta = get_double("Tree.THETA", 0.01);
+    double epsilon = get_double("BasicSetting.EPSILON", 1e-10);
+
+    // calculate force with groups_xyzm[i]
     #ifdef OMP
-    // openmp computing
-    int max_size = 1024;
-    omp_set_num_threads(8);
-    Node* node_list[max_size];
-    Particle* particle_list[max_size];
-    int run_list[max_size];
-    int current_size = 0;
-    for (int i = 0; i < npart; i++) {
-        compute_interaction(T.root, P, i, THETA, node_list, particle_list, run_list, 
-                              &current_size, max_size, poles, epsilon);
-    }
-    #pragma omp parallel for schedule(static)
-    for (int j = 0; j < current_size; j++) {
-        if (run_list[j] == 1) {
-            add_cell_particle_force(particle_list[j], node_list[j], epsilon);
-        }
-        else if(run_list[j] == 2) {
-            add_cell_particle_force_quad(particle_list[j], node_list[j], epsilon);
-        }
-        // printf("index: %d, thread number: %d / %d\n", j, omp_get_thread_num(), omp_get_num_threads());
-    }
+    int OMP_NUM_THREADS = get_int("Openmp.THREADS", 1);
+    int OMP_CHUNK = get_int("Openmp.CHUNK", 1);
+    omp_set_num_threads(OMP_NUM_THREADS);
+    #pragma omp parallel for schedule(dynamic, OMP_CHUNK)
     #endif
+    for (int g = 0; g < n_groups; g++) {
+        compute_interaction(T.root, P, groups_xyzm[g], group_nodes[g], particle_indices[g], n_groups, npart, number_in_group[g], theta, poles, epsilon);
+    }
 
-    #ifdef SERIAL
-    for(int i = 0; i < npart; i++) {
-        Tree_Force(T.root, P, i, THETA, epsilon);
-    }
-    #endif
-#ifdef DEBUG
+    #ifdef DEBUG
     gettimeofday(&t1, 0);
     printf("timeElapsed for Tree_Force(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
-#endif
+    #endif
+
     Free_Tree(T.root);
-    // free(node_list);
-    // free(particle_list);
+    for (int i = 0; i < npart; i++) {
+        free(groups_xyzm[i]);
+        free(particle_indices[i]);
+    }
+    
 }
