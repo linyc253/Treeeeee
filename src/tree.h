@@ -1,6 +1,7 @@
 #ifndef TREE_H_INCLUDED
 #define TREE_H_INCLUDED
 #include "parameter.h"
+#include "particle.h"
 
 typedef struct node{
     struct node** children; // Array to be allocate later

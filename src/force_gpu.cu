@@ -1,15 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <parameter.h>
-#include <tree.h>
+#include "parameter.h"
+#include "tree.h"
+#include "particle.h"
 
-// Not optimized (too many global memory access, P[ip * (1 + dim) + i] is NOT necessary)
+// Not optimized (too many global memory access)
 __global__ void Particle_Cell_Kernel(float4* P, int ng, float4* C, int nl, float3* F, float epsilon) {
     int id = blockDim.x * blockIdx.x + threadIdx.x;
     // Particle-Cell
     if(id < ng * nl){
-        int ic = id / nl;
-        int ip = id % nl;
+        int ic = id / ng;
+        int ip = id % ng;
         float3 dx;
         float r_sq = 0.0;
         dx.x = P[ip].x - C[ic].x;
@@ -24,8 +25,8 @@ __global__ void Particle_Cell_Kernel(float4* P, int ng, float4* C, int nl, float
     // Particle-Particle
     else if(id < ng * (nl + ng)){
         id -= ng * nl;
-        int ipp = id / nl;
-        int ip = id % nl;
+        int ipp = id / ng;
+        int ip = id % ng;
         float3 dx;
         float r_sq = 0.0;
         dx.x = P[ip].x - P[ipp].x;
@@ -37,16 +38,17 @@ __global__ void Particle_Cell_Kernel(float4* P, int ng, float4* C, int nl, float
         F[ip].y += F_mag * dx.y;
         F[ip].z += F_mag * dx.z;
     }
+    __syncthreads();
 }
 
-void Particle_Cell_Force_gpu(Coord4* P, int ng, Coord4* C, int nl, Coord3* F, double epsilon){
+extern "C" void Particle_Cell_Force_gpu(Coord4* P, int ng, Coord4* C, int nl, Coord3* F, double epsilon){
     float4 *d_P, *d_C;
     float3 *d_F;
 
     // Allocate device memory
-    cudaMalloc((void**)&d_P, sizeof(float) * ng * (DIM + 1));
-    cudaMalloc((void**)&d_C, sizeof(float) * nl * (DIM + 1));
-    cudaMalloc((void**)&d_F, sizeof(float) * ng * DIM);
+    cudaMalloc((void**)&d_P, sizeof(float4) * ng);
+    cudaMalloc((void**)&d_C, sizeof(float4) * nl);
+    cudaMalloc((void**)&d_F, sizeof(float3) * ng);
 
     // Transfer data from host to device memory
     cudaMemcpy(d_P, P, sizeof(float4) * ng, cudaMemcpyHostToDevice);
@@ -56,13 +58,14 @@ void Particle_Cell_Force_gpu(Coord4* P, int ng, Coord4* C, int nl, Coord3* F, do
     cudaMemset(d_F, 0, sizeof(float3) * ng);
 
     // Executing kernel
-    int threadsPerBlock = 1024;
+    int threadsPerBlock = 1;
     int blocksPerGrid = (ng * (nl + ng) + threadsPerBlock - 1) / threadsPerBlock; // ceil(ng * (nl + ng) / threadsPerBlock)
     Particle_Cell_Kernel<<<blocksPerGrid, threadsPerBlock>>>(d_P, ng, d_C, nl, d_F, (float)epsilon);
     cudaDeviceSynchronize();
 
     // Transfer data back to host memory
-    cudaMemcpy(F, d_F, sizeof(float) * ng * DIM, cudaMemcpyDeviceToHost);
+    cudaMemcpy(F, d_F, sizeof(float3) * ng, cudaMemcpyDeviceToHost);
+    //printf("%f %f\n", ((float3*)F)->x, F->x[0]);
 
     // Deallocate device memory
     cudaFree(d_P);

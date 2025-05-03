@@ -10,6 +10,10 @@
 #include "string.h"
 #include "../lib/dsyevh3.h"
 
+#ifdef CUDA
+#include "force_gpu.h"
+#endif
+
 #ifdef OMP
 #include <omp.h>
 #endif
@@ -431,7 +435,7 @@ void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, N
 
         Coord3 force_xyz[number_in_group];
         #ifdef CUDA
-        // compute force using cuda device
+        Particle_Cell_Force_gpu(groups_xyzm, number_in_group, cell_xyzm, filled, force_xyz, epsilon);
         #else
         compute_force(groups_xyzm, cell_xyzm, force_xyz, number_in_group, filled, epsilon);
         #endif
@@ -448,7 +452,7 @@ void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, N
 
         Coord3 force_xyz[number_in_group];
         #ifdef CUDA
-        // compute force using cuda device
+        Particle_Cell_Force_gpu(groups_xyzm, number_in_group, cell_xyzm, filled, force_xyz, epsilon);
         #else
         compute_force(groups_xyzm, cell_xyzm, force_xyz, number_in_group, filled, epsilon);
         #endif
