@@ -29,4 +29,14 @@ typedef struct{
 
 void total_force_tree(Particle* P, int npart);
 
+typedef struct{
+    float x[3];
+    float m;
+} Coord4;
+
+// This should be compatible with cuda data type: float3 (a.x, a.y, a.z)
+typedef struct{
+    float x[3];
+} Coord3;
+
 #endif

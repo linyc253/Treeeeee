@@ -4,7 +4,7 @@ PYTHON=python
 echo "N   t1  t2" > comparison.dat
 
 # Run METHOD = 1 & 2 for various N
-for N in 1000 2000 4000 8000 16000 32000 64000
+for N in 1000 2000 4000 8000 16000 32000
 do
 # Generate data
 $PYTHON generate.py -N $N > Initial.dat
