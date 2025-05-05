@@ -1,6 +1,12 @@
-CC = gcc
-CFLAGS = -Wall -O2 
-LD_LIBS = -lm 
+CC = clang
+CFLAGS = -Wall -O2 -Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include
+LDFLAGS = -L/opt/homebrew/opt/libomp/lib
+LD_LIBS = -lm -lomp
+
+
+# CC = gcc
+# CFLAGS = -Wall -O2 
+# LD_LIBS = -lm 
 # CFLAGS += -DDEBUG
 # CFLAGS += -DMPI
 
@@ -21,7 +27,7 @@ $(DIR):
 	mkdir $@
 
 bin/treeeeee: $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LD_LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(LD_LIBS)
 
 -include $(DEP)
 
