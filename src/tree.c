@@ -339,7 +339,7 @@ void compute_force(Coord4* group_xyzm, Coord4* cell_xyzm, Coord3* force_xyz, int
 }
 
 // fill particle coordinates and mass to grouping array
-void fill_xyzm(Node* node, Particle* particles, Coord4* group_xyzm, int* particle_indices, int* filled, int n_groups) {
+void fill_xyzm(Node* node, Particle* particles, Coord4* group_xyzm, int* particle_indices, int* filled) {
     if (node == NULL){
         return;
     }
@@ -353,29 +353,22 @@ void fill_xyzm(Node* node, Particle* particles, Coord4* group_xyzm, int* particl
     }
     else {
         for (int i = 0; i < 1 << DIM; i++) {
-            fill_xyzm(node->children[i], particles, group_xyzm, particle_indices, filled, n_groups);
+            fill_xyzm(node->children[i], particles, group_xyzm, particle_indices, filled);
         }
     }
 }
 
 // create grouping
-void assign_group(Node* node, Particle* particles, int n_crit, int* n_groups, 
-                  Node** group_nodes, Coord4** groups_xyzm, int* number_in_group, int** particle_indices) {
-    if (node == NULL){
-        return;
-    }
+void assign_group(Node* node, Particle* particles, int n_crit, int* n_groups, Node** group_nodes) {
+    if (node == NULL) return;
+
     if (node->npart <= n_crit) {
         group_nodes[*n_groups] = node;
-        
-        // fill x, y, z, m to array
-        int filled = 0;
-        fill_xyzm(node, particles, groups_xyzm[*n_groups], particle_indices[*n_groups], &filled, *n_groups);
-        number_in_group[*n_groups] = filled;
         *n_groups = *n_groups + 1;
     }
     else {
         for (int i = 0; i < 1 << DIM; i++) {
-            assign_group(node->children[i], particles, n_crit, n_groups, group_nodes, groups_xyzm, number_in_group, particle_indices);
+            assign_group(node->children[i], particles, n_crit, n_groups, group_nodes);
         }
     }
 }
@@ -426,7 +419,7 @@ void traverse_node(Node* node, Node* group_node, Coord4* cell_xyzm, int* filled,
 
 // construct interaction list
 void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, Node* group_node, int* particle_indices,
-                         int n_groups, int n_particles, int number_in_group, double theta, int poles, double epsilon){
+                         int n_particles, int number_in_group, double theta, int poles, double epsilon){
 
     if (poles == 1) {
         Coord4 cell_xyzm[n_particles - number_in_group];
@@ -503,15 +496,8 @@ void total_force_tree(Particle* P, int npart){
     // create grouping 
     int n_crit = get_double("Tree.NCRIT", 1);
     int n_groups = 0;
-    Coord4* groups_xyzm[npart];
-    int* particle_indices[npart];
-    int number_in_group[npart];
     Node* group_nodes[npart];
-    for (int i = 0; i < npart; i++) {
-        groups_xyzm[i] = (Coord4*) malloc(n_crit * sizeof(Coord4));
-        particle_indices[i] = (int*) malloc((DIM + 1) * n_crit * sizeof(int));
-    }
-    assign_group(T.root, P, n_crit, &n_groups, group_nodes, groups_xyzm, number_in_group, particle_indices);
+    assign_group(T.root, P, n_crit, &n_groups, group_nodes);
     
     #ifdef DEBUG
     gettimeofday(&t1, 0);
@@ -551,7 +537,15 @@ void total_force_tree(Particle* P, int npart){
     #pragma omp parallel for schedule(dynamic, OMP_CHUNK)
     #endif
     for (int g = 0; g < n_groups; g++) {
-        compute_interaction(T.root, P, groups_xyzm[g], group_nodes[g], particle_indices[g], n_groups, npart, number_in_group[g], theta, poles, epsilon);
+        int number_in_group = group_nodes[g]->npart;
+        Coord4* groups_xyzm = (Coord4*) malloc(number_in_group * sizeof(Coord4));
+        int* particle_indices = (int*) malloc(number_in_group * sizeof(int));
+        int filled = 0;
+        
+        fill_xyzm(group_nodes[g], P, groups_xyzm, particle_indices, &filled);
+        compute_interaction(T.root, P, groups_xyzm, group_nodes[g], particle_indices, npart, number_in_group, theta, poles, epsilon);
+        free(groups_xyzm);
+        free(particle_indices);
     }
 
     #ifdef DEBUG
@@ -559,10 +553,5 @@ void total_force_tree(Particle* P, int npart){
     printf("timeElapsed for Tree_Force(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
     #endif
 
-    Free_Tree(T.root);
-    for (int i = 0; i < npart; i++) {
-        free(groups_xyzm[i]);
-        free(particle_indices[i]);
-    }
-    
+    Free_Tree(T.root);    
 }
