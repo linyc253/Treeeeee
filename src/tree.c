@@ -422,7 +422,7 @@ void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, N
                          int n_particles, int number_in_group, double theta, int poles, double epsilon){
 
     if (poles == 1) {
-        Coord4 cell_xyzm[n_particles - number_in_group];
+        Coord4* cell_xyzm = (Coord4*) malloc((n_particles - number_in_group) * sizeof(Coord4));
         int filled = 0;
         traverse_node(root, group_node, cell_xyzm, &filled, poles, theta);
 
@@ -437,9 +437,10 @@ void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, N
                 particles[particle_indices[i]].f[j] += force_xyz[i].x[j];
             }
         }
+        free(cell_xyzm);
     }
     else if (poles == 2) {
-        Coord4 cell_xyzm[3 * (n_particles - number_in_group)];
+        Coord4* cell_xyzm = (Coord4*) malloc(3 * (n_particles - number_in_group) * sizeof(Coord4));
         int filled = 0;
         traverse_node(root, group_node, cell_xyzm, &filled, poles, theta);
 
@@ -455,6 +456,7 @@ void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, N
                 filled++;
             }
         }
+        free(cell_xyzm);
     }
     else {
         printf("The parameter POLES looks very funny, please don't try to break the program\n");
@@ -496,7 +498,8 @@ void total_force_tree(Particle* P, int npart){
     // create grouping 
     int n_crit = get_double("Tree.NCRIT", 1);
     int n_groups = 0;
-    Node* group_nodes[npart];
+    
+    Node** group_nodes = (Node**) malloc(npart * sizeof(Node*));
     assign_group(T.root, P, n_crit, &n_groups, group_nodes);
     
     #ifdef DEBUG
@@ -553,5 +556,6 @@ void total_force_tree(Particle* P, int npart){
     printf("timeElapsed for Tree_Force(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
     #endif
 
-    Free_Tree(T.root);    
+    Free_Tree(T.root);
+    free(group_nodes);
 }
