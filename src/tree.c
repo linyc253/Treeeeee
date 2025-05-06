@@ -426,7 +426,7 @@ void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, N
         int filled = 0;
         traverse_node(root, group_node, cell_xyzm, &filled, poles, theta);
 
-        Coord3 force_xyz[number_in_group];
+        Coord3* force_xyz = (Coord3*) malloc(number_in_group * sizeof(Coord3));
         #ifdef CUDA
         Particle_Cell_Force_gpu(groups_xyzm, number_in_group, cell_xyzm, filled, force_xyz, epsilon);
         #else
@@ -438,13 +438,14 @@ void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, N
             }
         }
         free(cell_xyzm);
+        free(force_xyz);
     }
     else if (poles == 2) {
         Coord4* cell_xyzm = (Coord4*) malloc(3 * (n_particles - number_in_group) * sizeof(Coord4));
         int filled = 0;
         traverse_node(root, group_node, cell_xyzm, &filled, poles, theta);
 
-        Coord3 force_xyz[number_in_group];
+        Coord3* force_xyz = (Coord3*) malloc(number_in_group * sizeof(Coord3));
         #ifdef CUDA
         Particle_Cell_Force_gpu(groups_xyzm, number_in_group, cell_xyzm, filled, force_xyz, epsilon);
         #else
@@ -457,6 +458,7 @@ void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, N
             }
         }
         free(cell_xyzm);
+        free(force_xyz);
     }
     else {
         printf("The parameter POLES looks very funny, please don't try to break the program\n");
