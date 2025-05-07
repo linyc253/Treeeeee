@@ -61,3 +61,4 @@ for i in range(1, N_f):
     # Optional: set equal aspect ratio (good if your data is physical space)
     ax.set_box_aspect([5,2,2])
     fig.savefig(filename+".png")
+    plt.close()

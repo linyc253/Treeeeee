@@ -16,8 +16,8 @@ LD_LIBS = -lm -lomp -framework OpenCL
 # CFLAGS += -fsanitize=address -g  # useful for segmentation fault
 
 # Parse all the files
-# SRC = $(wildcard src/*.c) $(wildcard lib/*.c)
-SRC = src/test_opencl.c
+SRC = $(wildcard src/*.c) $(wildcard lib/*.c)
+# SRC = src/test_opencl.c
 OBJ = $(patsubst %.c,build/%.o,$(notdir $(SRC)))
 DEP = $(OBJ:%.o=%.d)
 DIR = bin/ build/
@@ -36,6 +36,12 @@ bin/treeeeee: $(OBJ)
 
 build/%.o: src/%.c
 	$(CC) $(CFLAGS) -c -MMD -o $@ $<
+
+ifdef CUDA_DIR
+build/%.o: src/%.cu
+
+		$(NVCC) -O2 -Xcompiler -fPIC -shared -c -MMD -o $@ $<
+endif
 
 build/%.o: lib/%.c
 	$(CC) -O2 -c -MMD -o $@ $<

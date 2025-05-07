@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # Import 3D plotting tools
 
 # Parameter
-N_f = 251
+N_f = 51
+
 
 # Load the file
 for i in range(1, N_f):

@@ -21,6 +21,7 @@ int main(){
 
     // Set up dimension
     DIM = get_int("BasicSetting.DIM", 3); // global variable defined in parameter.c
+    
     printf("Perform calculation in %d dimension\n", DIM);
 
     // Read Particle file

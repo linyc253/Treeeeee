@@ -1,5 +1,5 @@
 ### You need to modify 'python' to your default python executable
-PYTHON=python3
+PYTHON=python
 
 # Generate data
 $PYTHON generate.py -N 10000 > Initial.dat
@@ -23,7 +23,7 @@ STEP_PER_OUT = 3
 mv Final.dat Final_std.dat
 
 # Run METHOD = 2 for various THETA
-for THETA in 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+for THETA in 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1
 do
 # POLES = 1
     cat > Input_Parameter.ini<<!
@@ -39,6 +39,11 @@ STEP_PER_OUT = 3
 [Tree]
 THETA = $THETA               # Critical angle
 POLES = 1
+NCRIT = 10
+
+[Openmp]
+THREADS = 8
+CHUNK = 64
 !
 ../../bin/treeeeee
 echo  -n "$THETA  " >> comparison.dat
@@ -58,6 +63,11 @@ STEP_PER_OUT = 3
 [Tree]
 THETA = $THETA               # Critical angle
 POLES = 2
+NCRIT = 10
+
+[Openmp]
+THREADS = 8
+CHUNK = 64
 !
 ../../bin/treeeeee
 $PYTHON error.py >> comparison.dat
