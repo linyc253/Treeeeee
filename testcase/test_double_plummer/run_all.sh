@@ -1,5 +1,5 @@
 ### You need to modify 'python' to your default python executable
-PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
+PYTHON=python3
 
 ### Generate data (modfy N below)
 # N is the particle number for "each" plummer
@@ -24,12 +24,12 @@ POLES = 1
 NCRIT = 1000
 
 [Openmp]
-THREADS = 4
+THREADS = 8
 CHUNK = 1
 !
-../../bin/treeeeee
+../../bin/treeeeee_opencl
 
 # Plot plummer animation
 $PYTHON plot_gas.py -N 201
-convert 000*.png Plummer2.gif
+convert 00*.png Plummer2.gif
 #$PYTHON Energy.py -N 5001

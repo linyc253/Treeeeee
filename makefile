@@ -17,7 +17,6 @@ LD_LIBS = -lm -lomp -framework OpenCL
 
 # Parse all the files
 SRC = $(wildcard src/*.c) $(wildcard lib/*.c)
-# SRC = src/test_opencl.c
 OBJ = $(patsubst %.c,build/%.o,$(notdir $(SRC)))
 DEP = $(OBJ:%.o=%.d)
 DIR = bin/ build/
@@ -34,8 +33,17 @@ bin/treeeeee: $(OBJ)
 
 -include $(DEP)
 
+bin/treeeeee_opencl: $(OBJ)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(LD_LIBS)
+
+build/main.o: src/main.c
+	$(CC) $(CFLAGS) -DUSE_OPENCL -c -MMD -o $@ $<
+
 build/%.o: src/%.c
 	$(CC) $(CFLAGS) -c -MMD -o $@ $<
+
+build/%.o: lib/%.c
+	$(CC) -O2 -c -MMD -o $@ $<
 
 ifdef CUDA_DIR
 build/%.o: src/%.cu
