@@ -1,7 +1,9 @@
 CC = clang
 CFLAGS = -Wall -O2 -Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include
 LDFLAGS = -L/opt/homebrew/opt/libomp/lib
-LD_LIBS = -lm -lomp
+LD_LIBS = -lm -lomp -framework OpenCL
+# LD_LIBS = -lm -lomp
+
 
 
 # CC = gcc
@@ -14,7 +16,8 @@ LD_LIBS = -lm -lomp
 # CFLAGS += -fsanitize=address -g  # useful for segmentation fault
 
 # Parse all the files
-SRC = $(wildcard src/*.c) $(wildcard lib/*.c)
+# SRC = $(wildcard src/*.c) $(wildcard lib/*.c)
+SRC = src/test_opencl.c
 OBJ = $(patsubst %.c,build/%.o,$(notdir $(SRC)))
 DEP = $(OBJ:%.o=%.d)
 DIR = bin/ build/
@@ -24,7 +27,7 @@ all: checkdirs bin/treeeeee
 checkdirs: $(DIR)
 
 $(DIR):
-	mkdir $@
+	mkdir -p $@
 
 bin/treeeeee: $(OBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(LD_LIBS)
