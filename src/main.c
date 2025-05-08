@@ -52,7 +52,7 @@ void Setup_OpenCL(const char* kernel_file, int N) {
     CheckCLError(err, "clCreateCommandQueue");
 
     // ===== Hardcoded absolute path (adjust to your machine) =====
-    const char* absolute_kernel_path = "/TREEEEEE/src/force_gpu.cl";
+    const char* absolute_kernel_path = "../../src/force_gpu.cl";
     FILE* fp = fopen(absolute_kernel_path, "r");
     if (!fp) {
         printf("Error: Cannot open kernel file %s\n", absolute_kernel_path);

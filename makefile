@@ -4,8 +4,6 @@ LDFLAGS = -L/opt/homebrew/opt/libomp/lib
 LD_LIBS = -lm -lomp -framework OpenCL
 # LD_LIBS = -lm -lomp
 
-
-
 # CC = gcc
 # CFLAGS = -Wall -O2 
 # LD_LIBS = -lm 
@@ -21,7 +19,7 @@ OBJ = $(patsubst %.c,build/%.o,$(notdir $(SRC)))
 DEP = $(OBJ:%.o=%.d)
 DIR = bin/ build/
 
-all: checkdirs bin/treeeeee
+all: checkdirs bin/treeeeee bin/treeeeee_opencl
 
 checkdirs: $(DIR)
 
@@ -33,8 +31,8 @@ bin/treeeeee: $(OBJ)
 
 -include $(DEP)
 
-bin/treeeeee_opencl: $(OBJ)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(LD_LIBS)
+# bin/treeeeee_opencl: $(OBJ)
+# 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(LD_LIBS)
 
 build/main.o: src/main.c
 	$(CC) $(CFLAGS) -DUSE_OPENCL -c -MMD -o $@ $<
@@ -56,4 +54,3 @@ build/%.o: lib/%.c
 
 clean:
 	rm build/*
-
