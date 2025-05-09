@@ -16,7 +16,7 @@ python generate.py -N 10000 > Initial.dat
 ```
 The calculation result can be visualized by the python script
 ```
-plot_gas.py
+python plot_gas.py
 convert data/*.png Random.gif
 ```
 # Parameter file format
