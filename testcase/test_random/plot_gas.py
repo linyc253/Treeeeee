@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # Import 3D plotting tools
 
 # Parameter
-N_f = 51
+N_f = 101
 
 
 # Load the file
 for i in range(1, N_f):
-    filename = "%05d" % i
+    filename = "data/%05d" % i
     # Load the file
     with open(filename+".dat", 'r') as f:
         lines = f.readlines()
@@ -63,3 +63,4 @@ for i in range(1, N_f):
     # Optional: set equal aspect ratio (good if your data is physical space)
     # ax.set_box_aspect([np.ptp(positions[:,0]), np.ptp(positions[:,1]), np.ptp(positions[:,2])])
     fig.savefig(filename+".png", bbox_inches=None)
+    plt.close()

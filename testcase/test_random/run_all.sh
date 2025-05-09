@@ -8,4 +8,4 @@ $PYTHON generate.py -N 10000 > Initial.dat
 
 # Plot plummer animation
 $PYTHON plot_gas.py
-convert 000*.png Random.gif
+convert data/*.png Random.gif
