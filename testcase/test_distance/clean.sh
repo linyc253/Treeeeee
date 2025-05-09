@@ -1,0 +1,1 @@
+rm *.dat *.png *.gif E_K/*.png Tot_E/*.png U_g/*.png Input_Parameter.ini

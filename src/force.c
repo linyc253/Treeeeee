@@ -32,8 +32,8 @@ void two_particle_force(Particle* a, Particle* b, double* force, double epsilon)
 }
 
 // Update p.f[:] by gravitational force (brute force)
-void total_force(Particle* p, int npart){
-    double epsilon = get_double("BasicSetting.epsilon", 1e-10);
+void total_force(Particle* p, int npart, double epsilon){
+    // double epsilon = get_double("BasicSetting.epsilon", 1e-10);
     for (int i = 0; i < npart; i++){
         for (int k = 0; k < DIM; k++) {
             p[i].f[k] = 0.0;
