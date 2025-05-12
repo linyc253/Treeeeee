@@ -1,5 +1,4 @@
 import numpy as np
-import random
 import argparse
 
 # Parameters
@@ -16,7 +15,7 @@ N = int(args.N)             # number of total particles
 
 # Calculated quantities
 m = M/N                     # mass of each particle
-N_d = np.floor(0.8 * N)
+N_d = int(np.floor(0.85 * N))
 N_b = N - N_d
 M_d = M * N_d/N
 M_b = M - M_d
@@ -51,9 +50,9 @@ def sample_mn_disk_rejection(N, M, a, b, c=None, d=None,
     Rg, Zg = np.meshgrid(rr, zz, indexing='xy')
     
     # target*Jacobian = r * rho
-    target = Rg * rho_mn(Rg, Zg, M, a, b)
+    target = rho_mn(Rg, Zg, M, a, b)
     # envelope pdf = f_r(r) * f_z(z)
-    f_r = c * Rg / (Rg*Rg + c*c)**1.5
+    f_r = c / (Rg*Rg + c*c)**1.5
     f_z = (d/np.pi) / (Zg*Zg + d*d)
     env_pdf = f_r * f_z
 
@@ -64,7 +63,7 @@ def sample_mn_disk_rejection(N, M, a, b, c=None, d=None,
     while len(samples) < N:
         # sample r from f_r: CDF F_r(r)=1 - c/sqrt(r^2+c^2) -> invert
         u = np.random.rand(N - len(samples))
-        r_cand = c * np.sqrt(1./(1.-u)**2 - 1.)
+        r_cand = c * np.sqrt(1/(1-u)**2 - 1)
         # sample z from f_z: CDF F_z(z)=0.5 + (1/pi) arctan(z/d) -> invert
         u2 = np.random.rand(N - len(samples))
         z_cand = d * np.tan(np.pi*(u2 - 0.5))
@@ -92,10 +91,10 @@ def sample_mn_disk_rejection(N, M, a, b, c=None, d=None,
 
 disk = sample_mn_disk_rejection(N_d, M_d, a, b)
 
-# Calculate Hernquist bulge with N_b particles
-phi = np.random.rand(N_b)
-theta = np.arccos( np.random.rand(-1,1, size = N_b) )
-r = c / (np.random.rand(N_b) - 1)
+# Calculate Plummer bulge with N_b particles
+phi = np.random.uniform(0,2*np.pi, size = N_b)
+theta = np.arccos( np.random.uniform(-1,1, size = N_b) )
+r = a * np.sqrt( np.random.rand(N_b)**(-2.0/3.0)-1 )
 
 xb = r*np.sin(theta)*np.cos(phi)
 yb = r*np.sin(theta)*np.sin(phi)
@@ -105,15 +104,62 @@ bulge = []
 for x,y,z in zip(xb,yb,zb):
     bulge.append( (x,y,z) )
 
-# for i in range(N_b):
-#     # establish random points following distribution function in spherical
-#     phi[i] = np.random.uniform(0, 2*np.pi)
-#     theta[i] = np.arccos( np.random.uniform(-1,1) )
-#     r[i] = c / (np.random.uniform(0,1)**(-0.50)-1)
-#     # transform to Cartesian coordinate
-#     x[i] = r[i] * np.sin(theta[i]) * np.cos(phi[i])
-#     y[i] = r[i] * np.sin(theta[i]) * np.sin(phi[i])
-#     z[i] = r[i] * np.cos(theta[i])
+# Calculate the velocity (central + dispersion) of the disk particles
+def Omega(r):
+    B = a + b
+    return G*M/(r**2 + B**2)**(3.0/2.0)
+
+def Kappa(r):
+    B = a + b
+    num = G*M*(r**2+4*B**2)
+    den = (r**2+B**2)**(5.0/2.0)
+    return num/den
+
+def Nu(r):
+    B = a + b
+    den = b*(r**2+B**2)**(3.0/2.0)
+    return G*M*B/den
+
+# 1) Calculate dispersion \sigma_R, \sigma_\theta, \sigma_z
+def rho_r_0(x):
+    num = M_d/(2*np.pi)*np.cos(x)**3*(a*np.cos(x)+2*b)
+    den = (a*np.cos(x)+b)**3
+    return num/den
+
+def Sigma(a,b,nx):
+    x = np.linspace(a,b,nx)
+    f_x = x*(b-a)/nx
+    sum = f_x.sum()
+    return sum
+
+def sigma_R(r):
+    Q = 1.5
+    sigma_0 = 3.36*G*Sigma(0,np.pi/2,200)*Q/np.sqrt(Kappa(0))
+    return sigma_0*np.exp(-r/(2*a))
+
+def sigma_theta(r):
+    return sigma_R(r)*np.sqrt(Kappa(r)/(2*Omega(r)))
+
+def sigma_z(r):
+    return sigma_R(r)*np.sqrt(Nu(r)/Kappa(r))
+
+# 2) Calculate the centrifugal velocity
+def vel(r):
+    return np.sqrt(r**2*Omega(r)+G*M_b*r/(r+c)**2)
+
+
+
+# 3) Add the Gaussian dispersion velocity
+
+
+# Generate the velocity of the bulge particle
+vec = np.empty(N_b)
+vel = np.empty(N_b)
+v_theta = np.empty(N_b)
+v_phi = np.empty(N_b)
+vx = np.empty(N_b)
+vy = np.empty(N_b)
+vz = np.empty(N_b)
 
 # Calculate velocity by rejection method
 def sample_velocity(v_esc):
@@ -123,17 +169,7 @@ def sample_velocity(v_esc):
         if np.random.uniform(0, 1) < gq / 0.1:  # 0.1 is approx max of g(q)
             return q * v_esc
 
-
-# Generate the velocity of the N particles by energy conservation
-vec = np.empty(N)
-vel = np.empty(N)       # set up spherical coordinate in velocity space
-v_theta = np.empty(N)
-v_phi = np.empty(N)
-vx = np.empty(N)        # Cartesian coordinate in velocity space
-vy = np.empty(N)
-vz = np.empty(N)
-
-for i in range(N):
+for i in range(N_d,N+1):
     # calculate the speed by energy conservation
     vec[i] = (2*G*M)**0.5 * (r[i]**2 + a**2)**(-0.25)
     vel[i] = sample_velocity(vec[i])
@@ -149,8 +185,10 @@ for i in range(N):
 print(N)
 for i in range(N):
     print(m)
-print(disk)
-print(bulge)
+for i,j,k in disk:
+    print(i,j,k)
+for i,j,k in bulge:
+    print(i,j,k)
 
-for i in range(N):
-    print('%15f %16f %17f' % (vx[i], vy[i], vz[i]))
+# for i in range(N):
+#     print('%15f %16f %17f' % (vx[i], vy[i], vz[i]))
