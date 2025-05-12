@@ -5,7 +5,7 @@ import argparse
 # Parameters
 G = 1                       # Newton's gravity constant
 a = 20                      # critical radius
-d = 80                      # distance between two plummer
+d = 160                      # distance between two plummer
 M = 1000                      # total mass
 
 parser = argparse.ArgumentParser()

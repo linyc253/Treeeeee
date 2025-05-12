@@ -1,11 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
+import os
 
 # Parameter
 G = 1           # Newton gravity constant
 m = 1
 
+data_dir = "DATA/"
 parser = argparse.ArgumentParser()
 parser.add_argument("-N", "--N_f", help = "Number of figures")
 args = parser.parse_args()
@@ -21,9 +23,10 @@ v = np.empty((N_f,N,3))
 
 # Load the file
 for i in range(1, N_f):
-    filename = "%05d" % i
+    filename = "{:05d}.dat"
     # Load the file
-    with open(filename+".dat", 'r') as f:
+    filepath = os.path.join(data_dir, filename.format(i))
+    with open(filepath, 'r') as f:
         lines = f.readlines()
 
     # Positions:

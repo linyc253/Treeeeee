@@ -1,11 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
+import os
 
 # Parameter
 G = 1           # Newton gravity constant
 m = 0.002
 
+data_dir = "DATA/"
 parser = argparse.ArgumentParser()
 parser.add_argument("-N", "--N_f", help = "Number of figures")
 args = parser.parse_args()
@@ -21,9 +23,10 @@ v = np.empty((N_f,N,3))
 
 # Load the file
 for i in range(1, N_f):
-    filename = "%05d" % i
+    filename = "{:05d}.dat"
     # Load the file
-    with open(filename+".dat", 'r') as f:
+    filepath = os.path.join(data_dir, filename.format(i))
+    with open(filepath, 'r') as f:
         lines = f.readlines()
 
     # Positions:
@@ -44,6 +47,7 @@ for i in range(1, N_f):
 E_k = np.zeros(N_f-1)
 U_g = np.zeros(N_f-1)
 E_t = np.zeros(N_f-1)
+
 for i in range(1, N_f):
     # kinetic energy
     E_k[i-1] = 0.5 * m * np.sum(np.sum(v[i]**2, axis=1))
@@ -67,7 +71,6 @@ plt.plot(E_t)
 plt.title("Total Energy")
 plt.xlabel("Time")
 plt.ylabel("Energy")
-# plt.ylim(bottom=0, top=E_t.max()*1.1)
 plt.savefig("Plummer_Energy.png")
 
 plt.figure()
