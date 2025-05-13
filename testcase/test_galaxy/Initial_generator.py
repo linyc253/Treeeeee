@@ -143,43 +143,43 @@ def sigma_theta(r):
 def sigma_z(r):
     return sigma_R(r)*np.sqrt(Nu(r)/Kappa(r))
 
-# 2) Calculate the centrifugal velocity
+# 2) Combine everything together
 def vel(r):
     return np.sqrt(r**2*Omega(r)+G*M_b*r/(r+c)**2)
 
+r_d = np.sqrt(np.sum(disk[:,1:3]**2, axis=1))
 
+rng = np.random.default_rng()
+v_R = rng.normal(loc=0.0, scale=sigma_R(r_d))
+v_the = rng.normal(loc=vel(r_d), scale=sigma_theta(r_d))
+vz = rng.normal(loc=0.0, scale=sigma_z(r_d))
 
-# 3) Add the Gaussian dispersion velocity
+vx = v_R * disk[:,0]/r_d - v_the * disk[:,1]/r_d
+vy = v_R * disk[:,0]/r_d + v_the * disk[:,1]/r_d
 
+v_disk = np.vstack((vx, vy, vz)).T
 
 # Generate the velocity of the bulge particle
-vec = np.empty(N_b)
-vel = np.empty(N_b)
-v_theta = np.empty(N_b)
-v_phi = np.empty(N_b)
-vx = np.empty(N_b)
-vy = np.empty(N_b)
-vz = np.empty(N_b)
-
-# Calculate velocity by rejection method
-def sample_velocity(v_esc):
-    while True:
-        q = np.random.uniform(0, 1)  # trial q in [0,1]
+def sample_velocity(N,v_esc):
+    samples = []
+    while len(samples) < N:
+        q = np.random.rand()  # trial q in [0,1]
         gq = q**2 * (1 - q**2)**(7/2)
-        if np.random.uniform(0, 1) < gq / 0.1:  # 0.1 is approx max of g(q)
-            return q * v_esc
+        v_theta = np.arccos(np.random.uniform(-1,1))
+        v_phi = np.random.uniform(0,2*np.pi)
+        if np.random.rand() < gq/0.1:
+            vs = v_esc[len(samples)] * q
+            ths = v_theta
+            phs = v_phi
 
-for i in range(N_d,N+1):
-    # calculate the speed by energy conservation
-    vec[i] = (2*G*M)**0.5 * (r[i]**2 + a**2)**(-0.25)
-    vel[i] = sample_velocity(vec[i])
-    # attribute the velocity direction randomly
-    v_phi[i] = np.random.uniform(0, 2*np.pi)
-    v_theta[i] = np.arccos( np.random.uniform(-1,1) )
-    # turn to Cartesian coordinate in velocity space
-    vx[i] = vel[i] * np.sin(v_theta[i]) * np.cos(v_phi[i])
-    vy[i] = vel[i] * np.sin(v_theta[i]) * np.sin(v_phi[i])
-    vz[i] = vel[i] * np.cos(v_theta[i])
+            vxs = vs * np.sin(ths) * np.cos(phs)
+            vys = vs * np.sin(ths) * np.sin(phs)
+            vzs = vs *np.cos(ths)
+            samples.append( (vxs,vys,vzs) )
+    return np.array(samples[:N])
+        
+vec = (2*G*M)**0.5 * (r**2 + a**2)**(-0.25)
+v_bulge = sample_velocity(N_b,vec)
 
 # Print the result formally
 print(N)
@@ -189,6 +189,8 @@ for i,j,k in disk:
     print(i,j,k)
 for i,j,k in bulge:
     print(i,j,k)
-
-# for i in range(N):
-#     print('%15f %16f %17f' % (vx[i], vy[i], vz[i]))
+print("//")
+for i,j,k in v_disk:
+    print(i,j,k)
+for i,j,k in v_bulge:
+    print(i,j,k)
