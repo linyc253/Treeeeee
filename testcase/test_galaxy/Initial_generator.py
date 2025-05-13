@@ -3,10 +3,10 @@ import argparse
 
 # Parameters
 G = 1                       # Newton's gravity constant
-M = 20000                      # total mass
-a = 250                     # disk scale radius
-b = 35                      # disk scale height
-c = 50                      # bulge scale radius
+M = 1.32e31                      # total mass
+a = 5.318*3.086e19                     # disk scale radius
+b = 0.25*3.086e19                      # disk scale height
+c = 0.3873*3.086e19                      # bulge scale radius
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-N", "--N", help = "Number of particles")
@@ -15,7 +15,7 @@ N = int(args.N)             # number of total particles
 
 # Calculated quantities
 m = M/N                     # mass of each particle
-N_d = int(np.floor(0.85 * N))
+N_d = int(np.floor(0.86 * N))
 N_b = N - N_d
 M_d = M * N_d/N
 M_b = M - M_d
@@ -94,7 +94,7 @@ disk = sample_mn_disk_rejection(N_d, M_d, a, b)
 # Calculate Plummer bulge with N_b particles
 phi = np.random.uniform(0,2*np.pi, size = N_b)
 theta = np.arccos( np.random.uniform(-1,1, size = N_b) )
-r = a * np.sqrt( np.random.rand(N_b)**(-2.0/3.0)-1 )
+r = c * np.sqrt( np.random.rand(N_b)**(-2.0/3.0)-1 )
 
 xb = r*np.sin(theta)*np.cos(phi)
 yb = r*np.sin(theta)*np.sin(phi)
