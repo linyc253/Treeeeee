@@ -3,7 +3,7 @@ import argparse
 
 # Parameters
 G = 1                       # Newton's gravity constant
-M = 20                      # total mass
+M = 20000                      # total mass
 a = 250                     # disk scale radius
 b = 35                      # disk scale height
 c = 50                      # bulge scale radius
@@ -147,12 +147,15 @@ def sigma_z(r):
 def vel(r):
     return np.sqrt(r**2*Omega(r)+G*M_b*r/(r+c)**2)
 
-r_d = np.sqrt(np.sum(disk[:,1:3]**2, axis=1))
+r_d = np.sqrt(np.sum(disk[:,0:2]**2, axis=1))
 
 rng = np.random.default_rng()
-v_R = rng.normal(loc=0.0, scale=sigma_R(r_d))
-v_the = rng.normal(loc=vel(r_d), scale=sigma_theta(r_d))
-vz = rng.normal(loc=0.0, scale=sigma_z(r_d))
+# v_R = rng.normal(loc=0.0, scale=sigma_R(r_d)**0.5)
+# v_the = rng.normal(loc=vel(r_d), scale=sigma_theta(r_d)**0.5)
+# vz = rng.normal(loc=0.0, scale=sigma_z(r_d)**0.5)
+v_R = np.zeros(N_d)
+v_the = vel(r_d)
+vz = np.zeros(N_d)
 
 vx = v_R * disk[:,0]/r_d - v_the * disk[:,1]/r_d
 vy = v_R * disk[:,0]/r_d + v_the * disk[:,1]/r_d
@@ -189,7 +192,6 @@ for i,j,k in disk:
     print(i,j,k)
 for i,j,k in bulge:
     print(i,j,k)
-print("//")
 for i,j,k in v_disk:
     print(i,j,k)
 for i,j,k in v_bulge:

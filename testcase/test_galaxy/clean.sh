@@ -1,0 +1,1 @@
+rm DATA/*.dat Figure/*.png Input_Parameter.ini Galaxy.gif *.dat log
