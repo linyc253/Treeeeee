@@ -3,10 +3,10 @@ import argparse
 
 # Parameters
 G = 1                       # Newton's gravity constant
-M = 1.32e31                      # total mass
-a = 5.318*3.086e19                     # disk scale radius
-b = 0.25*3.086e19                      # disk scale height
-c = 0.3873*3.086e19                      # bulge scale radius
+M = 1000                    # total mass
+a = 250                     # disk scale radius
+b = 35                      # disk scale height
+c = 50                      # bulge scale radius
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-N", "--N", help = "Number of particles")
@@ -15,7 +15,7 @@ N = int(args.N)             # number of total particles
 
 # Calculated quantities
 m = M/N                     # mass of each particle
-N_d = int(np.floor(0.86 * N))
+N_d = int(np.floor(0.8 * N))
 N_b = N - N_d
 M_d = M * N_d/N
 M_b = M - M_d
@@ -107,35 +107,39 @@ for x,y,z in zip(xb,yb,zb):
 # Calculate the velocity (central + dispersion) of the disk particles
 def Omega(r):
     B = a + b
-    return G*M/(r**2 + B**2)**(3.0/2.0)
+    return G*M_d/(r**2 + B**2)**(3.0/2.0)
 
 def Kappa(r):
     B = a + b
-    num = G*M*(r**2+4*B**2)
+    num = G*M_d*(r**2+4*B**2)
     den = (r**2+B**2)**(5.0/2.0)
     return num/den
 
 def Nu(r):
     B = a + b
     den = b*(r**2+B**2)**(3.0/2.0)
-    return G*M*B/den
+    return G*M_d*B/den
 
 # 1) Calculate dispersion \sigma_R, \sigma_\theta, \sigma_z
-def rho_r_0(x):
-    num = M_d/(2*np.pi)*np.cos(x)**3*(a*np.cos(x)+2*b)
-    den = (a*np.cos(x)+b)**3
-    return num/den
+# def rho_r_0(x):
+#     num = M_d/(2*np.pi)*np.cos(x)**3*(a*np.cos(x)+2*b)
+#     den = (a*np.cos(x)+b)**3
+#     return num/den
 
-def Sigma(a,b,nx):
-    x = np.linspace(a,b,nx)
-    f_x = x*(b-a)/nx
-    sum = f_x.sum()
-    return sum
+# def Sigma(a,b,nx):
+#     x = np.linspace(a,b,nx)
+#     f_x = x*(b-a)/nx
+#     sum = f_x.sum()
+#     return sum
+
+def Sigma(R, M, a, b):
+    B = a + b
+    return (M * b**2) / (4 * np.pi) * (a * R**2 + (a + 3 * B) * (a + B)**2)\
+         / (B**3 * (R**2 + (a + B)**2)**(5/2))
 
 def sigma_R(r):
-    Q = 1.5
-    sigma_0 = 3.36*G*Sigma(0,np.pi/2,200)*Q/np.sqrt(Kappa(0))
-    return sigma_0*np.exp(-r/(2*a))
+    Q = 1.2
+    return 3.36*G*Sigma(r,M_d,a,b)*Q/np.sqrt(Kappa(r))
 
 def sigma_theta(r):
     return sigma_R(r)*np.sqrt(Kappa(r)/(2*Omega(r)))
@@ -145,20 +149,20 @@ def sigma_z(r):
 
 # 2) Combine everything together
 def vel(r):
-    return np.sqrt(r**2*Omega(r)+G*M_b*r/(r+c)**2)
+    return np.sqrt(r**2*Omega(r)+G*M_b*r**2/(r**2+c**2)**1.5)
 
 r_d = np.sqrt(np.sum(disk[:,0:2]**2, axis=1))
 
 rng = np.random.default_rng()
-# v_R = rng.normal(loc=0.0, scale=sigma_R(r_d)**0.5)
-# v_the = rng.normal(loc=vel(r_d), scale=sigma_theta(r_d)**0.5)
-# vz = rng.normal(loc=0.0, scale=sigma_z(r_d)**0.5)
-v_R = np.zeros(N_d)
-v_the = vel(r_d)
-vz = np.zeros(N_d)
+v_R = rng.normal(loc=0.0, scale=sigma_R(r_d)**0.5)
+v_the = rng.normal(loc=vel(r_d), scale=sigma_theta(r_d)**0.5)
+vz = rng.normal(loc=0.0, scale=sigma_z(r_d)**0.5)
+# v_R = np.zeros(N_d)
+# v_the = vel(r_d)
+# vz = np.zeros(N_d)
 
 vx = v_R * disk[:,0]/r_d - v_the * disk[:,1]/r_d
-vy = v_R * disk[:,0]/r_d + v_the * disk[:,1]/r_d
+vy = v_R * disk[:,1]/r_d + v_the * disk[:,0]/r_d
 
 v_disk = np.vstack((vx, vy, vz)).T
 
@@ -181,7 +185,7 @@ def sample_velocity(N,v_esc):
             samples.append( (vxs,vys,vzs) )
     return np.array(samples[:N])
         
-vec = (2*G*M)**0.5 * (r**2 + a**2)**(-0.25)
+vec = (2*G*M_b)**0.5 * (r**2 + c**2)**(-0.25)
 v_bulge = sample_velocity(N_b,vec)
 
 # Print the result formally

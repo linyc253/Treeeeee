@@ -13,7 +13,7 @@ N_f = int(args.N)/2
 N_f = int(N_f)       
 
 # Load the file
-for i in range(1,1+N_f):
+for i in range(1 + N_f,1 + 2*N_f):
     filename = "{:05d}.dat"
     # Load the file
     filepath = os.path.join(data_dir, filename.format(i))
