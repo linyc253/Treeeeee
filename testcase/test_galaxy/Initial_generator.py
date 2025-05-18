@@ -7,18 +7,27 @@ M = 1000                    # total mass
 a = 250                     # disk scale radius
 b = 35                      # disk scale height
 c = 50                      # bulge scale radius
+e = 4*c                     # halo scale radius
+
+
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-N", "--N", help = "Number of particles")
+parser.add_argument("-N", help = "Number of particles")
+parser.add_argument("-S", default=0, help = "Turn on/off the spiral. Default:0.")
+parser.add_argument("-H", default=0, help = "Turn on/off the halo. Default:0.")
 args = parser.parse_args()
-N = int(args.N)             # number of total particles
+N       = int(args.N)               # number of total particles
+spiral  = int(args.S)               # The switch of spiral
+halo    = int(args.H)               # The switch of halo
 
 # Calculated quantities
 m = M/N                     # mass of each particle
 N_d = int(np.floor(0.8 * N))
 N_b = N - N_d
+N_h = 5 * N_d
 M_d = M * N_d/N
 M_b = M - M_d
+M_h = 5 * M_d
 
 # Calculate Miyamoto–Nagai disk with N_d particles
 def rho_mn(r, z, M, a, b):
@@ -79,7 +88,7 @@ def sample_mn_disk_rejection(N, M, a, b, c=None, d=None,
         u3 = np.random.rand(r_cand.size)
         keep = u3 < acc_prob
         rs = r_cand[keep]
-        phs= phi[keep]
+        phs= phi[keep] + spiral * 0.01 * np.cos(2*phi[keep])
         zs = z_cand[keep]
 
         xs = rs * np.cos(phs)
@@ -104,6 +113,20 @@ bulge = []
 for x,y,z in zip(xb,yb,zb):
     bulge.append( (x,y,z) )
 
+# Calculate Plummer halo with N_h particles
+if halo == 1:
+    phi = np.random.uniform(0,2*np.pi, size = N_h)
+    theta = np.arccos( np.random.uniform(-1,1, size = N_h) )
+    r = e * np.sqrt( np.random.rand(N_h)**(-2.0/3.0)-1 )
+
+    xh = r*np.sin(theta)*np.cos(phi)
+    yh = r*np.sin(theta)*np.sin(phi)
+    zh = r*np.cos(theta)
+
+    halo_r = []
+    for x,y,z in zip(xh,yh,zh):
+        halo_r.append( (x,y,z) )
+
 # Calculate the velocity (central + dispersion) of the disk particles
 def Omega(r):
     B = a + b
@@ -121,25 +144,16 @@ def Nu(r):
     return G*M_d*B/den
 
 # 1) Calculate dispersion \sigma_R, \sigma_\theta, \sigma_z
-# def rho_r_0(x):
-#     num = M_d/(2*np.pi)*np.cos(x)**3*(a*np.cos(x)+2*b)
-#     den = (a*np.cos(x)+b)**3
-#     return num/den
-
-# def Sigma(a,b,nx):
-#     x = np.linspace(a,b,nx)
-#     f_x = x*(b-a)/nx
-#     sum = f_x.sum()
-#     return sum
-
 def Sigma(R, M, a, b):
     B = a + b
     return (M * b**2) / (4 * np.pi) * (a * R**2 + (a + 3 * B) * (a + B)**2)\
          / (B**3 * (R**2 + (a + B)**2)**(5/2))
 
 def sigma_R(r):
-    Q = 1.2
-    return 3.36*G*Sigma(r,M_d,a,b)*Q/np.sqrt(Kappa(r))
+    Q0 = 1.2
+    # Q_R = Q0 + spiral*0.5*np.tanh((r-5*a)/a)
+    Q_R = Q0 + 0.4*np.exp(-(r/0.5/a)**2) + 0.4*(r>3*a)
+    return 3.36*G*Sigma(r,M_d,a,b)*Q_R/np.sqrt(Kappa(r))
 
 def sigma_theta(r):
     return sigma_R(r)*np.sqrt(Kappa(r)/(2*Omega(r)))
@@ -149,7 +163,8 @@ def sigma_z(r):
 
 # 2) Combine everything together
 def vel(r):
-    return np.sqrt(r**2*Omega(r)+G*M_b*r**2/(r**2+c**2)**1.5)
+    return np.sqrt(r**2*Omega(r) + G*M_b*r**2/(r**2+c**2)**1.5\
+         + halo*G*M_h*r**2/(r**2+e**2)**1.5)
 
 r_d = np.sqrt(np.sum(disk[:,0:2]**2, axis=1))
 
@@ -157,9 +172,6 @@ rng = np.random.default_rng()
 v_R = rng.normal(loc=0.0, scale=sigma_R(r_d)**0.5)
 v_the = rng.normal(loc=vel(r_d), scale=sigma_theta(r_d)**0.5)
 vz = rng.normal(loc=0.0, scale=sigma_z(r_d)**0.5)
-# v_R = np.zeros(N_d)
-# v_the = vel(r_d)
-# vz = np.zeros(N_d)
 
 vx = v_R * disk[:,0]/r_d - v_the * disk[:,1]/r_d
 vy = v_R * disk[:,1]/r_d + v_the * disk[:,0]/r_d
@@ -181,14 +193,21 @@ def sample_velocity(N,v_esc):
 
             vxs = vs * np.sin(ths) * np.cos(phs)
             vys = vs * np.sin(ths) * np.sin(phs)
-            vzs = vs *np.cos(ths)
+            vzs = vs * np.cos(ths)
             samples.append( (vxs,vys,vzs) )
     return np.array(samples[:N])
         
 vec = (2*G*M_b)**0.5 * (r**2 + c**2)**(-0.25)
 v_bulge = sample_velocity(N_b,vec)
 
+# Generate the velocity of the halo particle
+if halo == 1:
+    vec = (2*G*M_h)**0.5 * (r**2 + e**2)**(-0.25)
+    v_halo = sample_velocity(N_h,vec)
+
 # Print the result formally
+if halo == 1: N = int(5*N)
+
 print(N)
 for i in range(N):
     print(m)
@@ -196,7 +215,13 @@ for i,j,k in disk:
     print(i,j,k)
 for i,j,k in bulge:
     print(i,j,k)
+if halo == 1:
+    for i,j,k in halo_r:
+        print(i,j,k)
 for i,j,k in v_disk:
     print(i,j,k)
 for i,j,k in v_bulge:
     print(i,j,k)
+if halo == 1:
+    for i,j,k in v_halo:
+        print(i,j,k)

@@ -3,7 +3,7 @@ PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
 # PYTHON=python3
 
 ### Generate data (modfy N below)
-$PYTHON Initial_generator.py -N 50000 > Initial.dat
+$PYTHON Initial_generator.py -N 2000 -S 1 -H 1 > Initial.dat
 
 ### Run Treeeeee setting
     cat > Input_Parameter.ini<<!
@@ -13,8 +13,8 @@ METHOD = 2                   # Method 1:brute_force
                              #        2:tree_algo (default)
 PARTICLE_FILE = Initial.dat  # filename of particle file (default: Initial.dat)
 T_TOT = 1600                 # total evolution time
-DT = 0.04                    # maximal time interval
-ETA = 8.0                    # parameter that controls the accuracy and stability of the timestep in simulations
+DT = 0.1                     # maximal time interval
+ETA = 20.0                   # parameter that controls the accuracy and stability of the timestep in simulations
 TIME_PER_OUT = 2             # Output 00xxx.dat in every STEP_PER_OUT steps
 EPSILON = 1e-4               # softening length used to prevent singularities and numerical instabilities in particle interactions
 OUTDIR = DATA
@@ -22,7 +22,7 @@ OUTDIR = DATA
 [Tree]
 THETA = 0.4                  # Critical angle
 POLES = 1
-NCRIT = 1000
+NCRIT = 1200
 
 [Openmp]
 THREADS = 2
@@ -32,8 +32,8 @@ CHUNK = 1
 
 # Plot galaxy animation
 cd Figure
-$PYTHON plot_gas.py -N 800 &
-$PYTHON plot_gas2.py -N 800 &
+$PYTHON plot_gas.py -F 800 -H 1 &
+$PYTHON plot_gas2.py -F 800 -H 1 &
 cd ..
 wait
 convert Figure/0*.png Galaxy.gif
