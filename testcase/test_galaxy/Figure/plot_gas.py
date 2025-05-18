@@ -29,6 +29,16 @@ for i in range(1,1+N_f):
         for i in range(1 + num_particles, 1 + 2 * num_particles)
     ])
 
+    # Force:
+    force = np.array([
+        list(map(float, lines[i].strip().split()))
+        for i in range(1 + 3 * num_particles, 1 + 4 * num_particles)
+    ])
+    F = np.sqrt(force[:,0]**2+force[:,1]**2+force[:,2]**2)
+    # np.clip(F,1.0e-4,np.max(F))
+    F += 1.0e-14
+    F = -np.log(F)
+
     # Create a new figure
     fig = plt.figure(figsize=(8, 8))
     ax = fig.add_subplot(111, projection='3d')
@@ -48,9 +58,9 @@ for i in range(1,1+N_f):
         positions[:, 2],  # z-coordinates
         s=0.1,            # marker size (small for many particles)
         alpha=0.7,        # transparency for better visibility
-        c=np.zeros(num_particles),
+        c=F,
         cmap='YlOrRd',
-        vmin = -0.2, vmax=1.0
+        vmin = np.min(F), vmax=np.max(F)
     )
 
     # Fix the axes
