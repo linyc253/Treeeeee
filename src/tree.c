@@ -36,7 +36,7 @@ Tree Initialize_Tree(Particle* P, int npart){
             T.box_min[i] = fmin(T.box_min[i], P[j].x[i]);
         }
         T.root->D = fmax(T.root->D, T.box_max[i] - T.box_min[i]);
-        T.root->x[i] = (T.box_min[i] + T.box_max[i]) / 2.0; // temporarily set to center
+        T.root->c[i] = (T.box_min[i] + T.box_max[i]) / 2.0; // temporarily set to center
     }
 
     return T;
@@ -46,7 +46,7 @@ Tree Initialize_Tree(Particle* P, int npart){
 int Which_Child(Node* node, Particle p){
     int i = 0;
     for(int j = 0; j < DIM; j++){
-        if(p.x[j] > node->x[j]) i += (1<<j);
+        if(p.x[j] > node->c[j]) i += (1<<j);
     }
     return i;
 }
@@ -62,8 +62,8 @@ void Initialize_Children(Node* node){
         newNode->D = node->D / 2.0;
         node->children[i] = newNode;
         for(int j = 0; j < DIM; j++){
-            if((i / (1<<j)) % 2 == 0) newNode->x[j] = node->x[j] - newNode->D / 2.0;
-            else newNode->x[j] = node->x[j] + newNode->D / 2.0;
+            if((i / (1<<j)) % 2 == 0) newNode->c[j] = node->c[j] - newNode->D / 2.0;
+            else newNode->c[j] = node->c[j] + newNode->D / 2.0;
         }
     }
 }
