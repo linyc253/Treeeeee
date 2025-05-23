@@ -389,7 +389,7 @@ void traverse_node(Node* node, Node* group_node, Coord4* cell_xyzm, int* filled,
 
     double r = 0;
     for (int j = 0; j < 3; j++) {
-        r += pow(group_node->x[j] - node->x[j], 2);
+        r += pow(group_node->c[j] - node->x[j], 2);
     }
     r = sqrt(r) - sqrt((double)DIM) * (group_node->D) / 2;
     if (node->D / r < theta && r > 0) {
