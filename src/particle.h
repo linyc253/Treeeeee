@@ -13,6 +13,8 @@ typedef struct {
 
     // force on the particle
     double f[3];
+
+    int zone;
 } Particle;
 
 int Read_Particle_File(Particle** P);

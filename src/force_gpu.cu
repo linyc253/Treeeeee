@@ -65,7 +65,7 @@ extern "C" void Particle_Cell_Force_gpu(Coord4* P, int ng, Coord4* C, int nl, Co
 
     // Executing kernel
     int threadsPerBlock = 32;
-    int blocksPerGrid = ng;//(ng * (nl + ng) + threadsPerBlock - 1) / threadsPerBlock; // ceil(ng * (nl + ng) / threadsPerBlock)
+    int blocksPerGrid = ng;
     Particle_Cell_Kernel<<<blocksPerGrid, threadsPerBlock>>>(d_P, ng, d_C, nl, d_F, (float)epsilon);
     cudaDeviceSynchronize();
 

@@ -115,6 +115,46 @@ void Clear_Empty(Node* node){
     }
 }
 
+Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
+    if(node1->npart == 0){ // node1 is empty
+        free(node1);
+        return node2;
+    }
+    if(node2->npart == 0){ // node2 is empty
+        free(node2);
+        return node1;
+    }
+    if(node1->npart == 1 && node2->npart == 1){
+        Initialize_Children(node1);
+        Tree_Insert(node1->children[Which_Child(node1, P[node1->i])], P, node1->i);
+        Tree_Insert(node1->children[Which_Child(node2, P[node2->i])], P, node2->i);
+        node1->i = -1;
+        node1->npart++;
+        free(node2);
+        return node1;
+    }
+    if(node1->npart == 1){
+        Tree_Insert(node2->children[Which_Child(node1, P[node1->i])], P, node1->i);
+        node2->npart++;
+        free(node1);
+        return node2;
+    }
+    if(node2->npart == 1){
+        Tree_Insert(node1->children[Which_Child(node2, P[node2->i])], P, node2->i);
+        node1->npart++;
+        free(node2);
+        return node1;
+    }
+
+    for(int i = 0; i < 1<<DIM; i++){
+        node1->children[i] = Tree_Merge(node1->children[i], node2->children[i], P);
+        
+    }
+    node1->npart += node2->npart;
+    free(node2);
+    return node1;
+}
+
 // procedure QuadtreeBuild
 //      Quadtree = {empty}
 //        For i = 1 to n          ... loop over all particles
@@ -125,13 +165,54 @@ void Clear_Empty(Node* node){
 //        Traverse the tree (via, say, breadth first search), 
 //          eliminating empty leaves
 Tree Tree_Build(Particle* P, int npart){
+    #ifdef OMP
+    int OMP_NUM_THREADS = get_int("Openmp.THREADS", 1);
+    omp_set_num_threads(OMP_NUM_THREADS);
+    Tree T_local[OMP_NUM_THREADS];
+    
+    #pragma omp parallel
+    {
+    int tid = omp_get_thread_num();
+    T_local[tid] = Initialize_Tree(P, npart);
+
+    for (int i = 0; i < npart; i++){
+        if(P[i].zone == tid) Tree_Insert(T_local[tid].root, P, i);
+    }
+    }
+
+    Tree T;
+    T = T_local[0];
+    for (int i = 1; i < OMP_NUM_THREADS; i++){
+        T.root = Tree_Merge(T.root, T_local[i].root, P);
+    }
+    #else
     Tree T = Initialize_Tree(P, npart);
     for (int i = 0; i < npart; i++){
         Tree_Insert(T.root, P, i);
     }
+    #endif
+
     Clear_Empty(T.root);
     return T;
 }
+
+// void Tree_Insert(Node* node, Particle* P, int i){
+//     if(node->npart > 1){
+//         Tree_Insert(node->children[Which_Child(node, P[i])], P, i);
+//     }
+//     else if(node->npart == 1){
+//         Initialize_Children(node);
+//         Tree_Insert(node->children[Which_Child(node, P[i])], P, i);
+//         Tree_Insert(node->children[Which_Child(node, P[node->i])], P, node->i);
+//         node->i = -1;
+//     }
+//     else{ // node->npart == 0
+//         node->i = i;
+//     }
+//     node->npart++;
+// }
+
+
 
 // function ( mass, cm ) = Compute_Mass(n)    
 //        ... Compute the mass and center of mass (cm) of 
@@ -155,26 +236,44 @@ Tree Tree_Build(Particle* P, int npart){
 //             store ( mass, cm ) at n
 //             return ( mass, cm )
 //        end
-int Compute_m_and_x(Node* node, Particle* P){
+int Compute_m_and_x(Node* node, Particle* P, int depth){
     if(node == NULL) return -1;
     
     if(node->npart == 1){
         node->m = P[node->i].m;
+        node->cost = depth;
         for(int i = 0; i < DIM; i++) node->x[i] = P[node->i].x[i];
     }
     else{
         node->m = 0.0;
+        node->cost = 0;
         for(int i = 0; i < DIM; i++) node->x[i] = 0.0;
 
         for(int i = 0; i < 1<<DIM; i++){
-            if(Compute_m_and_x(node->children[i], P) != -1){
+            if(Compute_m_and_x(node->children[i], P, depth + 1) != -1){
                 node->m += node->children[i]->m;
+                node->cost += node->children[i]->cost;
                 for(int j = 0; j < DIM; j++) node->x[j] += node->children[i]->m * node->children[i]->x[j];
             }
         }
         for(int i = 0; i < DIM; i++) node->x[i] /= node->m;
     }
     return 0;
+}
+
+int Set_Costzone(Node* node, Particle* P, int cost, int cost_tot, int OMP_NUM_THREADS){
+    if(node == NULL) return cost;
+    
+    if(node->npart == 1){
+        P[node->i].zone = cost / ((cost_tot + OMP_NUM_THREADS - 1) / OMP_NUM_THREADS);
+        return cost + node->cost;
+    }
+    else{
+        for(int i = 0; i < 1<<DIM; i++){
+            cost = Set_Costzone(node->children[i], P, cost, cost_tot, OMP_NUM_THREADS);
+        }
+    }
+    return cost;
 }
 
 // compute quadrupole tensor and pseudoparticle positions
@@ -513,7 +612,12 @@ void total_force_tree(Particle* P, int npart){
     #endif
 
     int poles = get_int("Tree.POLES", 1);
-    Compute_m_and_x(T.root, P);
+    Compute_m_and_x(T.root, P, 0);
+
+    #ifdef OMP
+    int OMP_NUM_THREADS = get_int("Openmp.THREADS", 1);
+    Set_Costzone(T.root, P, 0, T.root->cost, OMP_NUM_THREADS);
+    #endif
     if (poles == 2) {
         compute_quadrupole(T.root, P);
     }
@@ -534,7 +638,7 @@ void total_force_tree(Particle* P, int npart){
 
     // calculate force with groups_xyzm[i]
     #ifdef OMP
-    int OMP_NUM_THREADS = get_int("Openmp.THREADS", 1);
+    //int OMP_NUM_THREADS = get_int("Openmp.THREADS", 1);
     int OMP_CHUNK = get_int("Openmp.CHUNK", 1);
     omp_set_num_threads(OMP_NUM_THREADS);
     #pragma omp parallel for schedule(dynamic, OMP_CHUNK)
