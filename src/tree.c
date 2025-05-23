@@ -527,7 +527,8 @@ void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, N
 
         Coord3 force_xyz[number_in_group];
         #ifdef CUDA
-        Particle_Cell_Force_gpu(groups_xyzm, number_in_group, cell_xyzm, filled, force_xyz, epsilon);
+        int threadsPerBlock = get_int("GPU.threadsPerBlock", 32);
+        Particle_Cell_Force_gpu(groups_xyzm, number_in_group, cell_xyzm, filled, force_xyz, epsilon, threadsPerBlock);
         #else
         compute_force(groups_xyzm, cell_xyzm, force_xyz, number_in_group, filled, epsilon);
         #endif
@@ -545,7 +546,8 @@ void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, N
 
         Coord3 force_xyz[number_in_group];
         #ifdef CUDA
-        Particle_Cell_Force_gpu(groups_xyzm, number_in_group, cell_xyzm, filled, force_xyz, epsilon);
+        int threadsPerBlock = get_int("GPU.threadsPerBlock", 32);
+        Particle_Cell_Force_gpu(groups_xyzm, number_in_group, cell_xyzm, filled, force_xyz, epsilon, threadsPerBlock);
         #else
         compute_force(groups_xyzm, cell_xyzm, force_xyz, number_in_group, filled, epsilon);
         #endif
