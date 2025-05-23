@@ -47,7 +47,7 @@ __global__ void Particle_Cell_Kernel(float4* P, int ng, float4* C, int nl, float
     __syncthreads();
 }
 
-extern "C" void Particle_Cell_Force_gpu(Coord4* P, int ng, Coord4* C, int nl, Coord3* F, double epsilon){
+extern "C" void Particle_Cell_Force_gpu(Coord4* P, int ng, Coord4* C, int nl, Coord3* F, double epsilon, int threadsPerBlock){
     float4 *d_P, *d_C;
     float3 *d_F;
 
@@ -64,8 +64,7 @@ extern "C" void Particle_Cell_Force_gpu(Coord4* P, int ng, Coord4* C, int nl, Co
     cudaMemset(d_F, 0, sizeof(float3) * ng);
 
     // Executing kernel
-    int threadsPerBlock = 32;
-    int blocksPerGrid = ng;//(ng * (nl + ng) + threadsPerBlock - 1) / threadsPerBlock; // ceil(ng * (nl + ng) / threadsPerBlock)
+    int blocksPerGrid = ng;
     Particle_Cell_Kernel<<<blocksPerGrid, threadsPerBlock>>>(d_P, ng, d_C, nl, d_F, (float)epsilon);
     cudaDeviceSynchronize();
 

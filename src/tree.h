@@ -6,7 +6,7 @@
 typedef struct node{
     struct node** children; // Array to be allocate later
     struct node* parent;
-    int npart;
+    int npart, cost;
     int i;
     double D; // cell size
 

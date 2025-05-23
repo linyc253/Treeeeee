@@ -1,4 +1,5 @@
 import random
+import argparse
 
 def generate_nbody_testcase(npart, mass_range=(1.0, 10.0), pos_range=(-100.0, 100.0), vel_range=(-1.0, 1.0)):
     masses = [random.uniform(*mass_range) for _ in range(npart)]
@@ -17,4 +18,10 @@ def generate_nbody_testcase(npart, mass_range=(1.0, 10.0), pos_range=(-100.0, 10
         print(f"{vx:.6f} {vy:.6f} {vz:.6f}")
 
 if __name__ == "__main__":
-    generate_nbody_testcase(npart=2000)
+    # Initialize parser
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-N", "--npart", help = "Number of particles")
+    args = parser.parse_args()
+
+    # Generate testcase
+    generate_nbody_testcase(npart=int(args.npart))
