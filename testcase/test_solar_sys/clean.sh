@@ -1,0 +1,1 @@
+rm *.dat *.png Solar_sys.gif Input_Parameter.ini

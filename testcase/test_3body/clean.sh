@@ -1,0 +1,1 @@
+rm -r Input_Parameter.ini *.dat *.png data* log*

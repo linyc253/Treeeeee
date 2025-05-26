@@ -1,0 +1,1 @@
+rm error.png Input_Parameter.ini *.dat

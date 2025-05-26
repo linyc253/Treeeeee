@@ -1,0 +1,1 @@
+rm -r data Random.gif Initial.dat
