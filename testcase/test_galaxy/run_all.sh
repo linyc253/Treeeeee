@@ -3,7 +3,7 @@ PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
 # PYTHON=python3
 
 ### Generate data (modfy N below)
-$PYTHON Initial_generator.py -N 2000 -S 1 -H 1 > Initial.dat
+$PYTHON Initial_generator.py -N 10000 -S 0 -H 0 > Initial.dat
 
 ### Run Treeeeee setting
     cat > Input_Parameter.ini<<!
@@ -12,12 +12,13 @@ DIM = 3                      # Dimension of the system (default: 3)
 METHOD = 2                   # Method 1:brute_force 
                              #        2:tree_algo (default)
 PARTICLE_FILE = Initial.dat  # filename of particle file (default: Initial.dat)
-T_TOT = 1600                 # total evolution time
-DT = 0.1                     # maximal time interval
+T_TOT = 3200                 # total evolution time
+DT = 1.0                     # maximal time interval
 ETA = 20.0                   # parameter that controls the accuracy and stability of the timestep in simulations
-TIME_PER_OUT = 2             # Output 00xxx.dat in every STEP_PER_OUT steps
-EPSILON = 1e-4               # softening length used to prevent singularities and numerical instabilities in particle interactions
-OUTDIR = DATA
+TIME_PER_OUT = 4             # Output 00xxx.dat in every STEP_PER_OUT steps
+EPSILON = 1e-3               # softening length used to prevent singularities and numerical instabilities in particle interactions
+OUTDIR = DATA                # The output file should be put in this folder
+# RESTART = 800                # Continue the calculation at this step
 
 [Tree]
 THETA = 0.4                  # Critical angle
@@ -32,8 +33,10 @@ CHUNK = 1
 
 # Plot galaxy animation
 cd Figure
-$PYTHON plot_gas.py -F 800 -H 1 &
-$PYTHON plot_gas2.py -F 800 -H 1 &
+$PYTHON plot_gas.py -F 800 -H 0 &
+$PYTHON plot_gas2.py -F 800 -H 0 &
 cd ..
 wait
-convert Figure/0*.png Galaxy.gif
+ffmpeg -framerate 12 -i Figure/%05d.png galaxy.mp4
+#convert Figure/0*.png Galaxy.gif
+$PYTHON velocity.py -H 0
