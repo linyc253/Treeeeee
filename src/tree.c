@@ -140,6 +140,15 @@ void Clear_Empty(Node* node){
     }
 }
 
+// Merge info of node2 into node1
+void merge_node(Node* node1, Node* node2){
+    node1->npart += node2->npart;
+    node1->cost += node2->cost;
+    double m = node1->m + node2->m;
+    for(int i = 0; i < DIM; i++) node1->x[i] = (node1->x[i] * node1->m + node2->x[i] + node2->m) / m;
+    node1->m = m;
+}
+
 Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
     if(node1 == NULL || node1->npart == 0){ // node1 is empty
         return node2;
@@ -154,21 +163,21 @@ Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
         index = Which_Child(node2, P[node2->i]);
         Tree_Insert(node1->children[index], node1, index, P, node2->i);
         node1->i = -1;
-        node1->npart++;
+        merge_node(node1, node2);
         free(node2);
         return node1;
     }
     if(node1->npart == 1){
         int index = Which_Child(node1, P[node1->i]);
         Tree_Insert(node2->children[index], node2, index, P, node1->i);
-        node2->npart++;
+        merge_node(node2, node1);
         free(node1);
         return node2;
     }
     if(node2->npart == 1){
         int index = Which_Child(node2, P[node2->i]);
         Tree_Insert(node1->children[index], node1, index, P, node2->i);
-        node1->npart++;
+        merge_node(node1, node2);
         free(node2);
         return node1;
     }
@@ -177,7 +186,7 @@ Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
         node1->children[i] = Tree_Merge(node1->children[i], node2->children[i], P);
         
     }
-    node1->npart += node2->npart;
+    merge_node(node1, node2);
     free(node2);
     return node1;
 }
@@ -191,34 +200,11 @@ Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
 //        ... leaves, whose siblings are not empty
 //        Traverse the tree (via, say, breadth first search), 
 //          eliminating empty leaves
-Tree Tree_Build(Particle* P, int npart){
-    #ifdef OMP
-    int OMP_NUM_THREADS = get_int("Openmp.THREADS", 1);
-    omp_set_num_threads(OMP_NUM_THREADS);
-    Tree T_local[OMP_NUM_THREADS];
-    
-    #pragma omp parallel
-    {
-    int tid = omp_get_thread_num();
-    T_local[tid] = Initialize_Tree(P, npart);
-
-    for (int i = 0; i < npart; i++){
-        if(P[i].zone == tid) Tree_Insert(T_local[tid].root, NULL, 0, P, i);
-    }
-    }
-
-    Tree T;
-    T = T_local[0];
-    for (int i = 1; i < OMP_NUM_THREADS; i++){
-        T.root = Tree_Merge(T.root, T_local[i].root, P);
-    }
-    #else
+Tree Tree_Build(Particle* P, int npart, int tid){
     Tree T = Initialize_Tree(P, npart);
     for (int i = 0; i < npart; i++){
-        Tree_Insert(T.root, NULL, 0, P, i);
+         if(P[i].zone == tid) Tree_Insert(T.root, NULL, 0, P, i);
     }
-    #endif
-
     return T;
 }
 
@@ -263,7 +249,7 @@ Tree Tree_Build(Particle* P, int npart){
 //             return ( mass, cm )
 //        end
 int Compute_m_and_x(Node* node, Particle* P, int depth){
-    if(node == NULL) return -1;
+    if(node == NULL || node->npart == 0) return -1;
     
     if(node->npart == 1){
         node->m = P[node->i].m;
@@ -620,7 +606,27 @@ void total_force_tree(Particle* P, int npart){
     gettimeofday(&t0, 0);
     #endif
     
-    Tree T = Tree_Build(P, npart);
+    #ifdef OMP
+    int OMP_NUM_THREADS = get_int("Openmp.THREADS", 1);
+    omp_set_num_threads(OMP_NUM_THREADS);
+    Tree T_local[OMP_NUM_THREADS];
+    
+    #pragma omp parallel
+    {
+        int tid = omp_get_thread_num();
+        T_local[tid] = Tree_Build(P, npart, tid);
+        Compute_m_and_x(T_local[tid].root, P, 0);
+    }
+
+    Tree T;
+    T = T_local[0];
+    for (int i = 1; i < OMP_NUM_THREADS; i++){
+        T.root = Tree_Merge(T.root, T_local[i].root, P);
+    }
+    #else
+    Tree T = Tree_Build(P, npart, 0);
+    Compute_m_and_x(T.root, P, 0);
+    #endif
     
     // create grouping 
     int n_crit = get_double("Tree.NCRIT", 1);
@@ -640,11 +646,9 @@ void total_force_tree(Particle* P, int npart){
     #endif
 
     int poles = get_int("Tree.POLES", 1);
-    Compute_m_and_x(T.root, P, 0);
 
     #ifdef OMP
-    int OMP_NUM_THREADS = get_int("Openmp.THREADS", 1);
-    Set_Costzone(T.root, P, 0, T.root->cost, OMP_NUM_THREADS);
+    if(OMP_NUM_THREADS > 0) Set_Costzone(T.root, P, 0, T.root->cost, OMP_NUM_THREADS);
     #endif
     if (poles == 2) {
         compute_quadrupole(T.root, P);
