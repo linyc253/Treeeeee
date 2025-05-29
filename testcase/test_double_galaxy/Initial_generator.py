@@ -8,6 +8,8 @@ a = 250                     # disk scale radius
 b = 35                      # disk scale height
 c = 50                      # bulge scale radius
 e = 4*c                     # halo scale radius
+distance = 2000             # distance between the two galaxy
+angle    = 0                # the incline angle of two galaxy (rad)
 
 
 
@@ -19,6 +21,7 @@ args = parser.parse_args()
 N       = int(args.N)               # number of total particles
 spiral  = int(args.S)               # The switch of spiral
 halo    = int(args.H)               # The switch of halo
+distance = int(distance/2)
 
 # Calculated quantities
 m = M/N                     # mass of each particle
@@ -205,23 +208,55 @@ if halo == 1:
     vec = (2*G*M_h)**0.5 * (r**2 + e**2)**(-0.25)
     v_halo = sample_velocity(N_h,vec)
 
+# Copy the first galaxy to generate the second galaxy
+disk2 = disk
+v_disk2 = v_disk
+disk2[:,0] = disk2[:,0]*np.cos(angle) - disk[:,2]*np.sin(angle) + distance
+disk2[:,2] = disk2[:,0]*np.sin(angle) + disk[:,2]*np.cos(angle)
+disk[:,0]  = disk[:,0] - distance
+v_disk2[:,0] = v_disk2[:,0]*np.cos(angle) - v_disk[:,2]*np.sin(angle)
+v_disk2[:,2] = v_disk2[:,0]*np.sin(angle) + v_disk[:,2]*np.cos(angle)
+
+bulge2 = bulge
+v_bulge2 = v_bulge
+bulge2[:] = bulge2[:] + np.array((distance,0,0))
+bulge[:]  = bulge[:] - np.array((distance,0,0))
+if halo == 1:
+    halo_r2 = halo_r
+    v_halo2 = v_halo
+    halo_r2[:] = halo_r2[:] + np.array((distance,0,0))
+    halo_r[:]  = halo_r[:] - np.array((distance,0,0))
+
+
 # Print the result formally
 if halo == 1: N = int(5*N)
 
-print(N)
-for i in range(N):
+print(2*N)
+for i in range(2*N):
     print(m)
 for i,j,k in disk:
     print(i,j,k)
+for i,j,k in disk2:
+    print(i,j,k)
 for i,j,k in bulge:
+    print(i,j,k)
+for i,j,k in bulge2:
     print(i,j,k)
 if halo == 1:
     for i,j,k in halo_r:
         print(i,j,k)
+    for i,j,k in halo_r2:
+        print(i,j,k)
 for i,j,k in v_disk:
+    print(i,j,k)
+for i,j,k in v_disk2:
     print(i,j,k)
 for i,j,k in v_bulge:
     print(i,j,k)
+for i,j,k in v_bulge2:
+    print(i,j,k)
 if halo == 1:
     for i,j,k in v_halo:
+        print(i,j,k)
+    for i,j,k in v_halo2:
         print(i,j,k)
