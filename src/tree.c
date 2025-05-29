@@ -273,17 +273,21 @@ int Compute_m_and_x(Node* node, Particle* P, int depth){
     return 0;
 }
 
-int Set_Costzone(Node* node, Particle* P, int cost, int cost_tot, int OMP_NUM_THREADS){
+int Set_Costzone(Node* node, Particle* P, int cost, int cost_tot, int OMP_NUM_THREADS, int tid){
     if(node == NULL) return cost;
-    
+
+    int zone_left = cost / ((cost_tot + OMP_NUM_THREADS - 1) / OMP_NUM_THREADS);
+    int zone_right = (cost + node->cost - 1) / ((cost_tot + OMP_NUM_THREADS - 1) / OMP_NUM_THREADS);
+
+    if(tid < zone_left || tid > zone_right) return cost + node->cost;
+
     if(node->npart == 1){
-        P[node->i].zone = cost / ((cost_tot + OMP_NUM_THREADS - 1) / OMP_NUM_THREADS);
+        if(tid == zone_right) P[node->i].zone = tid;
         return cost + node->cost;
     }
-    else{
-        for(int i = 0; i < 1<<DIM; i++){
-            cost = Set_Costzone(node->children[i], P, cost, cost_tot, OMP_NUM_THREADS);
-        }
+        
+    for(int i = 0; i < 1<<DIM; i++){
+        cost = Set_Costzone(node->children[i], P, cost, cost_tot, OMP_NUM_THREADS, tid);
     }
     return cost;
 }
@@ -645,11 +649,19 @@ void total_force_tree(Particle* P, int npart){
     gettimeofday(&t0, 0);
     #endif
 
-    int poles = get_int("Tree.POLES", 1);
+    
 
     #ifdef OMP
-    if(OMP_NUM_THREADS > 0) Set_Costzone(T.root, P, 0, T.root->cost, OMP_NUM_THREADS);
+    if(OMP_NUM_THREADS > 0){
+        #pragma omp parallel
+        {
+            int tid = omp_get_thread_num();
+            Set_Costzone(T.root, P, 0, T.root->cost, OMP_NUM_THREADS, tid);
+        }
+    }
     #endif
+
+    int poles = get_int("Tree.POLES", 1);
     if (poles == 2) {
         compute_quadrupole(T.root, P);
     }
