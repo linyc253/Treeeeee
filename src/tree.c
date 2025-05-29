@@ -195,22 +195,6 @@ Tree Tree_Build(Particle* P, int npart, int tid){
     return T;
 }
 
-// void Tree_Insert(Node* node, Particle* P, int i){
-//     if(node->npart > 1){
-//         Tree_Insert(node->children[Which_Child(node, P[i])], P, i);
-//     }
-//     else if(node->npart == 1){
-//         Initialize_Children(node);
-//         Tree_Insert(node->children[Which_Child(node, P[i])], P, i);
-//         Tree_Insert(node->children[Which_Child(node, P[node->i])], P, node->i);
-//         node->i = -1;
-//     }
-//     else{ // node->npart == 0
-//         node->i = i;
-//     }
-//     node->npart++;
-// }
-
 
 
 // function ( mass, cm ) = Compute_Mass(n)    
@@ -685,7 +669,13 @@ void total_force_tree(Particle* P, int npart){
     gettimeofday(&t1, 0);
     printf("timeElapsed for Tree_Force(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
     #endif
-
+    #ifdef DEBUG
+    gettimeofday(&t0, 0);
+    #endif
     Free_Tree(T.root);
+    #ifdef DEBUG
+    gettimeofday(&t1, 0);
+    printf("timeElapsed for Free_Tree(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
+    #endif
     free(group_nodes);
 }
