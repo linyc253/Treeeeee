@@ -627,31 +627,7 @@ void total_force_tree(Particle* P, int npart){
     for (int i = 1; i < OMP_NUM_THREADS; i++){
         T.root = Tree_Merge(T.root, T_local[i].root, P);
     }
-    #else
-    Tree T = Tree_Build(P, npart, 0);
-    Compute_m_and_x(T.root, P, 0);
-    #endif
-    
-    // create grouping 
-    int n_crit = get_double("Tree.NCRIT", 1);
-    int n_groups = 0;
-    
-    Node** group_nodes = (Node**) malloc(npart * sizeof(Node*));
-    assign_group(T.root, P, n_crit, &n_groups, group_nodes);
-    
-    #ifdef DEBUG
-    gettimeofday(&t1, 0);
-    printf("timeElapsed for Tree_Build(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
-    #endif
-    
-    // ---------------2. Compute the mass & centre-of-mass---------------
-    #ifdef DEBUG
-    gettimeofday(&t0, 0);
-    #endif
 
-    
-
-    #ifdef OMP
     if(OMP_NUM_THREADS > 0){
         #pragma omp parallel
         {
@@ -659,6 +635,20 @@ void total_force_tree(Particle* P, int npart){
             Set_Costzone(T.root, P, 0, T.root->cost, OMP_NUM_THREADS, tid);
         }
     }
+
+    #else
+    Tree T = Tree_Build(P, npart, 0);
+    Compute_m_and_x(T.root, P, 0);
+    #endif
+    
+    #ifdef DEBUG
+    gettimeofday(&t1, 0);
+    printf("timeElapsed for Tree_Build(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
+    #endif
+    
+    // ---------------2. Compute the quadrupole (not parallelized yet) ---------------
+    #ifdef DEBUG
+    gettimeofday(&t0, 0);
     #endif
 
     int poles = get_int("Tree.POLES", 1);
@@ -667,13 +657,19 @@ void total_force_tree(Particle* P, int npart){
     }
     #ifdef DEBUG
     gettimeofday(&t1, 0);
-    printf("timeElapsed for Compute_m_and_x(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
+    printf("timeElapsed for compute_quadrupole(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
     #endif
 
     // ---------------3. Traverse the tree and calculate force---------------
     #ifdef DEBUG
     gettimeofday(&t0, 0);
     #endif
+
+    // create grouping 
+    int n_crit = get_double("Tree.NCRIT", 1);
+    int n_groups = 0;
+    Node** group_nodes = (Node**) malloc(npart * sizeof(Node*));
+    assign_group(T.root, P, n_crit, &n_groups, group_nodes);
 
     Zero_Force(P, npart);
 
@@ -682,7 +678,6 @@ void total_force_tree(Particle* P, int npart){
 
     // calculate force with groups_xyzm[i]
     #ifdef OMP
-    //int OMP_NUM_THREADS = get_int("Openmp.THREADS", 1);
     int OMP_CHUNK = get_int("Openmp.CHUNK", 1);
     omp_set_num_threads(OMP_NUM_THREADS);
     #pragma omp parallel for schedule(dynamic, OMP_CHUNK)
