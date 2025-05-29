@@ -11,6 +11,7 @@ typedef struct node{
     double D; // cell size
 
     double x[3];
+    double c[3]; // cell center
     double m;
 
     // for quadrupole 

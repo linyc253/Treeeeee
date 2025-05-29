@@ -36,7 +36,7 @@ Tree Initialize_Tree(Particle* P, int npart){
             T.box_min[i] = fmin(T.box_min[i], P[j].x[i]);
         }
         T.root->D = fmax(T.root->D, T.box_max[i] - T.box_min[i]);
-        T.root->x[i] = (T.box_min[i] + T.box_max[i]) / 2.0; // temporarily set to center
+        T.root->c[i] = (T.box_min[i] + T.box_max[i]) / 2.0; // temporarily set to center
     }
 
     return T;
@@ -46,7 +46,7 @@ Tree Initialize_Tree(Particle* P, int npart){
 int Which_Child(Node* node, Particle p){
     int i = 0;
     for(int j = 0; j < DIM; j++){
-        if(p.x[j] > node->x[j]) i += (1<<j);
+        if(p.x[j] > node->c[j]) i += (1<<j);
     }
     return i;
 }
@@ -60,27 +60,14 @@ void New_Node(Node* parent, int index){
     newNode->D = parent->D / 2.0;
     parent->children[index] = newNode;
     for(int j = 0; j < DIM; j++){
-        if((index / (1<<j)) % 2 == 0) newNode->x[j] = parent->x[j] - newNode->D / 2.0;
-        else newNode->x[j] = parent->x[j] + newNode->D / 2.0;
+        if((index / (1<<j)) % 2 == 0) newNode->c[j] = parent->c[j] - newNode->D / 2.0;
+        else newNode->c[j] = parent->c[j] + newNode->D / 2.0;
     }
 }
 
 void Initialize_Children(Node* node){
     node->children = (Node**) malloc((1 << DIM) * sizeof(Node*)); // bit operation: 1<<n = 2^n
     for(int i = 0; i < 1<<DIM; i++) node->children[i] = NULL;
-    // for(int i = 0; i < 1<<DIM; i++){
-    //     Node* newNode = (Node*) malloc(sizeof(Node));
-    //     newNode->parent = node;
-    //     newNode->children = NULL;
-    //     newNode->npart = 0;
-    //     newNode->i = -1;
-    //     newNode->D = node->D / 2.0;
-    //     node->children[i] = newNode;
-    //     for(int j = 0; j < DIM; j++){
-    //         if((i / (1<<j)) % 2 == 0) newNode->x[j] = node->x[j] - newNode->D / 2.0;
-    //         else newNode->x[j] = node->x[j] + newNode->D / 2.0;
-    //     }
-    // }
 }
 
 // procedure QuadInsert(i,n)   
@@ -504,7 +491,7 @@ void traverse_node(Node* node, Node* group_node, Coord4* cell_xyzm, int* filled,
 
     double r = 0;
     for (int j = 0; j < 3; j++) {
-        r += pow(group_node->x[j] - node->x[j], 2);
+        r += pow(group_node->c[j] - node->x[j], 2);
     }
     r = sqrt(r) - sqrt((double)DIM) * (group_node->D) / 2;
     if (node->D / r < theta && r > 0) {
