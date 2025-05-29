@@ -51,21 +51,36 @@ int Which_Child(Node* node, Particle p){
     return i;
 }
 
+void New_Node(Node* parent, int index){
+    Node* newNode = (Node*) malloc(sizeof(Node));
+    newNode->parent = parent;
+    newNode->children = NULL;
+    newNode->npart = 0;
+    newNode->i = -1;
+    newNode->D = parent->D / 2.0;
+    parent->children[index] = newNode;
+    for(int j = 0; j < DIM; j++){
+        if((index / (1<<j)) % 2 == 0) newNode->x[j] = parent->x[j] - newNode->D / 2.0;
+        else newNode->x[j] = parent->x[j] + newNode->D / 2.0;
+    }
+}
+
 void Initialize_Children(Node* node){
     node->children = (Node**) malloc((1 << DIM) * sizeof(Node*)); // bit operation: 1<<n = 2^n
-    for(int i = 0; i < 1<<DIM; i++){
-        Node* newNode = (Node*) malloc(sizeof(Node));
-        newNode->parent = node;
-        newNode->children = NULL;
-        newNode->npart = 0;
-        newNode->i = -1;
-        newNode->D = node->D / 2.0;
-        node->children[i] = newNode;
-        for(int j = 0; j < DIM; j++){
-            if((i / (1<<j)) % 2 == 0) newNode->x[j] = node->x[j] - newNode->D / 2.0;
-            else newNode->x[j] = node->x[j] + newNode->D / 2.0;
-        }
-    }
+    for(int i = 0; i < 1<<DIM; i++) node->children[i] = NULL;
+    // for(int i = 0; i < 1<<DIM; i++){
+    //     Node* newNode = (Node*) malloc(sizeof(Node));
+    //     newNode->parent = node;
+    //     newNode->children = NULL;
+    //     newNode->npart = 0;
+    //     newNode->i = -1;
+    //     newNode->D = node->D / 2.0;
+    //     node->children[i] = newNode;
+    //     for(int j = 0; j < DIM; j++){
+    //         if((i / (1<<j)) % 2 == 0) newNode->x[j] = node->x[j] - newNode->D / 2.0;
+    //         else newNode->x[j] = node->x[j] + newNode->D / 2.0;
+    //     }
+    // }
 }
 
 // procedure QuadInsert(i,n)   
@@ -86,17 +101,27 @@ void Initialize_Children(Node* node){
 //         ... n is a leaf 
 //         store particle i in node n
 //      endif
-void Tree_Insert(Node* node, Particle* P, int i){
-    if(node->npart > 1){
-        Tree_Insert(node->children[Which_Child(node, P[i])], P, i);
+
+// In principle: node == parent->children[index]
+void Tree_Insert(Node* node, Node* parent, int index, Particle* P, int i){
+    if(node == NULL){
+        New_Node(parent, index);
+        node = parent->children[index];
+        node->i = i;
+    }
+    else if(node->npart > 1){
+        index = Which_Child(node, P[i]);
+        Tree_Insert(node->children[index], node, index, P, i);
     }
     else if(node->npart == 1){
         Initialize_Children(node);
-        Tree_Insert(node->children[Which_Child(node, P[i])], P, i);
-        Tree_Insert(node->children[Which_Child(node, P[node->i])], P, node->i);
+        index = Which_Child(node, P[i]);
+        Tree_Insert(node->children[index], node, index, P, i);
+        index = Which_Child(node, P[node->i]);
+        Tree_Insert(node->children[index], node, index, P, node->i);
         node->i = -1;
     }
-    else{ // node->npart == 0
+    else{ // for initial insert when tree is empty
         node->i = i;
     }
     node->npart++;
@@ -116,31 +141,33 @@ void Clear_Empty(Node* node){
 }
 
 Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
-    if(node1->npart == 0){ // node1 is empty
-        free(node1);
+    if(node1 == NULL || node1->npart == 0){ // node1 is empty
         return node2;
     }
-    if(node2->npart == 0){ // node2 is empty
-        free(node2);
+    if(node2 == NULL || node2->npart == 0){ // node2 is empty
         return node1;
     }
     if(node1->npart == 1 && node2->npart == 1){
         Initialize_Children(node1);
-        Tree_Insert(node1->children[Which_Child(node1, P[node1->i])], P, node1->i);
-        Tree_Insert(node1->children[Which_Child(node2, P[node2->i])], P, node2->i);
+        int index = Which_Child(node1, P[node1->i]);
+        Tree_Insert(node1->children[index], node1, index, P, node1->i);
+        index = Which_Child(node2, P[node2->i]);
+        Tree_Insert(node1->children[index], node1, index, P, node2->i);
         node1->i = -1;
         node1->npart++;
         free(node2);
         return node1;
     }
     if(node1->npart == 1){
-        Tree_Insert(node2->children[Which_Child(node1, P[node1->i])], P, node1->i);
+        int index = Which_Child(node1, P[node1->i]);
+        Tree_Insert(node2->children[index], node2, index, P, node1->i);
         node2->npart++;
         free(node1);
         return node2;
     }
     if(node2->npart == 1){
-        Tree_Insert(node1->children[Which_Child(node2, P[node2->i])], P, node2->i);
+        int index = Which_Child(node2, P[node2->i]);
+        Tree_Insert(node1->children[index], node1, index, P, node2->i);
         node1->npart++;
         free(node2);
         return node1;
@@ -176,7 +203,7 @@ Tree Tree_Build(Particle* P, int npart){
     T_local[tid] = Initialize_Tree(P, npart);
 
     for (int i = 0; i < npart; i++){
-        if(P[i].zone == tid) Tree_Insert(T_local[tid].root, P, i);
+        if(P[i].zone == tid) Tree_Insert(T_local[tid].root, NULL, 0, P, i);
     }
     }
 
@@ -188,11 +215,10 @@ Tree Tree_Build(Particle* P, int npart){
     #else
     Tree T = Initialize_Tree(P, npart);
     for (int i = 0; i < npart; i++){
-        Tree_Insert(T.root, P, i);
+        Tree_Insert(T.root, NULL, 0, P, i);
     }
     #endif
 
-    Clear_Empty(T.root);
     return T;
 }
 
