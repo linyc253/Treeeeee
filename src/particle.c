@@ -23,6 +23,7 @@ int Read_Particle_File(Particle** P, const char* PARTICLE_FILE){
     for(int i = 0; i < npart; i++) status = fscanf(ptr, "%lf", &PP[i].m);
     for(int i = 0; i < npart; i++) status = fscanf(ptr, "%lf %lf %lf", &PP[i].x[0], &PP[i].x[1], &PP[i].x[2]);
     for(int i = 0; i < npart; i++) status = fscanf(ptr, "%lf %lf %lf", &PP[i].v[0], &PP[i].v[1], &PP[i].v[2]);
+    for(int i = 0; i < npart; i++) PP[i].zone = 0;
     int RESTART = get_int("BasicSetting.RESTART", 0);
     if(RESTART != 0){
         double buff[3];
@@ -52,7 +53,6 @@ void Write_Particle_File(Particle* P, int npart, const char* filename){
     for(int i = 0; i < npart; i++) fprintf(ptr, "%lf %lf %lf\n", P[i].x[0], P[i].x[1], P[i].x[2]);
     for(int i = 0; i < npart; i++) fprintf(ptr, "%lf %lf %lf\n", P[i].v[0], P[i].v[1], P[i].v[2]);
     for(int i = 0; i < npart; i++) fprintf(ptr, "%lf %lf %lf\n", P[i].f[0], P[i].f[1], P[i].f[2]);
-    for(int i = 0; i < npart; i++) P[i].zone = 0;
     fclose(ptr);
     return;
 }
