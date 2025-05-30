@@ -8,7 +8,7 @@ a = 250                     # disk scale radius
 b = 35                      # disk scale height
 c = 50                      # bulge scale radius
 e = 4*c                     # halo scale radius
-distance = 2000             # distance between the two galaxy
+distance = 3000             # distance between the two galaxy
 angle    = 0                # the incline angle of two galaxy (rad)
 
 
@@ -209,21 +209,21 @@ if halo == 1:
     v_halo = sample_velocity(N_h,vec)
 
 # Copy the first galaxy to generate the second galaxy
-disk2 = disk
-v_disk2 = v_disk
+disk2 = disk.copy()
+v_disk2 = v_disk.copy()
 disk2[:,0] = disk2[:,0]*np.cos(angle) - disk[:,2]*np.sin(angle) + distance
 disk2[:,2] = disk2[:,0]*np.sin(angle) + disk[:,2]*np.cos(angle)
 disk[:,0]  = disk[:,0] - distance
 v_disk2[:,0] = v_disk2[:,0]*np.cos(angle) - v_disk[:,2]*np.sin(angle)
 v_disk2[:,2] = v_disk2[:,0]*np.sin(angle) + v_disk[:,2]*np.cos(angle)
 
-bulge2 = bulge
-v_bulge2 = v_bulge
+bulge2 = bulge.copy()
+v_bulge2 = v_bulge.copy()
 bulge2[:] = bulge2[:] + np.array((distance,0,0))
 bulge[:]  = bulge[:] - np.array((distance,0,0))
 if halo == 1:
-    halo_r2 = halo_r
-    v_halo2 = v_halo
+    halo_r2 = halo_r.copy()
+    v_halo2 = v_halo.copy()
     halo_r2[:] = halo_r2[:] + np.array((distance,0,0))
     halo_r[:]  = halo_r[:] - np.array((distance,0,0))
 
