@@ -51,7 +51,7 @@ int Which_Child(Node* node, Particle p){
     return i;
 }
 
-void New_Node(Node* parent, int index){
+Node* New_Node(Node* parent, int index){
     Node* newNode = (Node*) malloc(sizeof(Node));
     newNode->parent = parent;
     newNode->children = NULL;
@@ -63,6 +63,7 @@ void New_Node(Node* parent, int index){
         if((index / (1<<j)) % 2 == 0) newNode->c[j] = parent->c[j] - newNode->D / 2.0;
         else newNode->c[j] = parent->c[j] + newNode->D / 2.0;
     }
+    return newNode;
 }
 
 void Initialize_Children(Node* node){
@@ -92,8 +93,7 @@ void Initialize_Children(Node* node){
 // In principle: node == parent->children[index]
 void Tree_Insert(Node* node, Node* parent, int index, Particle* P, int i){
     if(node == NULL){
-        New_Node(parent, index);
-        node = parent->children[index];
+        node = New_Node(parent, index);
         node->i = i;
     }
     else if(node->npart > 1){
@@ -127,14 +127,6 @@ void Clear_Empty(Node* node){
     }
 }
 
-// Merge info of node2 into node1
-void merge_node(Node* node1, Node* node2){
-    node1->npart += node2->npart;
-    node1->cost += node2->cost;
-    double m = node1->m + node2->m;
-    for(int i = 0; i < DIM; i++) node1->x[i] = (node1->x[i] * node1->m + node2->x[i] + node2->m) / m;
-    node1->m = m;
-}
 
 Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
     if(node1 == NULL || node1->npart == 0){ // node1 is empty
@@ -143,38 +135,38 @@ Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
     if(node2 == NULL || node2->npart == 0){ // node2 is empty
         return node1;
     }
-    if(node1->npart == 1 && node2->npart == 1){
+    if(node1->npart == 1){
         Initialize_Children(node1);
         int index = Which_Child(node1, P[node1->i]);
-        Tree_Insert(node1->children[index], node1, index, P, node1->i);
-        index = Which_Child(node2, P[node2->i]);
-        Tree_Insert(node1->children[index], node1, index, P, node2->i);
-        node1->i = -1;
-        merge_node(node1, node2);
-        free(node2);
-        return node1;
-    }
-    if(node1->npart == 1){
-        int index = Which_Child(node1, P[node1->i]);
-        Tree_Insert(node2->children[index], node2, index, P, node1->i);
-        merge_node(node2, node1);
-        free(node1);
-        return node2;
+        Node* child = New_Node(node1, index);
+        child->npart = node1->npart;
+        child->i = node1->i;
+        child->cost = node1->cost + 1;
+        child->m = node1->m;
+        for(int i = 0; i < DIM; i++) child->x[i] = node1->x[i];
     }
     if(node2->npart == 1){
+        Initialize_Children(node2);
         int index = Which_Child(node2, P[node2->i]);
-        Tree_Insert(node1->children[index], node1, index, P, node2->i);
-        merge_node(node1, node2);
-        free(node2);
-        return node1;
+        Node* child = New_Node(node2, index);
+        child->npart = node2->npart;
+        child->i = node2->i;
+        child->cost = node2->cost + 1;
+        child->m = node2->m;
+        for(int i = 0; i < DIM; i++) child->x[i] = node2->x[i];
     }
 
     for(int i = 0; i < 1<<DIM; i++){
         node1->children[i] = Tree_Merge(node1->children[i], node2->children[i], P);
-        
     }
-    merge_node(node1, node2);
-    free(node2);
+    node1->npart += node2->npart;
+    node1->i = -1;
+    node1->cost += node2->cost;
+    double m = node1->m + node2->m;
+    for(int i = 0; i < DIM; i++) node1->x[i] = (node1->x[i] * node1->m + node2->x[i] + node2->m) / m;
+    node1->m = m;
+
+    free(node2); // memory leak ?
     return node1;
 }
 
@@ -224,7 +216,7 @@ int Compute_m_and_x(Node* node, Particle* P, int depth){
     
     if(node->npart == 1){
         node->m = P[node->i].m;
-        node->cost = depth;
+        node->cost = (long long)depth;
         for(int i = 0; i < DIM; i++) node->x[i] = P[node->i].x[i];
     }
     else{
@@ -244,11 +236,11 @@ int Compute_m_and_x(Node* node, Particle* P, int depth){
     return 0;
 }
 
-int Set_Costzone(Node* node, Particle* P, int cost, int cost_tot, int OMP_NUM_THREADS, int tid){
+int Set_Costzone(Node* node, Particle* P, long long cost, long long cost_tot, int OMP_NUM_THREADS, int tid){
     if(node == NULL) return cost;
 
-    int zone_left = cost / ((cost_tot + OMP_NUM_THREADS - 1) / OMP_NUM_THREADS);
-    int zone_right = (cost + node->cost - 1) / ((cost_tot + OMP_NUM_THREADS - 1) / OMP_NUM_THREADS);
+    long long zone_left = cost / ((cost_tot + (long long)OMP_NUM_THREADS - 1) / (long long)OMP_NUM_THREADS);
+    long long zone_right = (cost + node->cost - 1) / ((cost_tot + (long long)OMP_NUM_THREADS - 1) / (long long)OMP_NUM_THREADS);
 
     if(tid < zone_left || tid > zone_right) return cost + node->cost;
 
