@@ -580,17 +580,25 @@ void total_force_tree(Particle* P, int npart){
     
     #pragma omp parallel
     {
+        // Build Tree and compute node info
         int tid = omp_get_thread_num();
         T_local[tid] = Tree_Build(P, npart, tid);
         Compute_m_and_x(T_local[tid].root, P, 0);
-    }
 
-    Tree T;
-    T = T_local[0];
-    for (int i = 1; i < OMP_NUM_THREADS; i++){
-        T.root = Tree_Merge(T.root, T_local[i].root, P);
+        #pragma omp barrier
+
+        // Merge Tree by parallel reduction
+        int stride = 1;
+        while(stride < OMP_NUM_THREADS){
+            if((tid % (2 * stride)) == 0 && (tid + stride < OMP_NUM_THREADS)){
+                T_local[tid].root = Tree_Merge(T_local[tid].root, T_local[tid + stride].root, P);
+            }
+            stride *= 2;
+            #pragma omp barrier
+        }
     }
-    
+    Tree T = T_local[0];
+
     if(T.root->npart != npart){
         printf("BUG: number of particle in tree (%d) mismatch with npart (%d)\n", T.root->npart, npart);
         exit(EXIT_FAILURE);
