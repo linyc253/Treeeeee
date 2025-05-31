@@ -9,6 +9,7 @@
 #include "math.h"
 #include "string.h"
 #include "../lib/dsyevh3.h"
+#include "node_pool.h"
 
 #ifdef CUDA
 #include "force_gpu.h"
@@ -22,11 +23,12 @@
 #include <sys/time.h>
 #endif
 
-Tree Initialize_Tree(Particle* P, int npart){
+Tree Initialize_Tree(Particle* P, int npart, NodePool* Pool){
     Tree T;
-    T.root = (Node*) malloc(sizeof(Node));
+    T.root = alloc_node(Pool);
     T.root->npart = 0;
     T.root->parent = NULL;
+    for(int i = 0; i < 1<<DIM; i++) T.root->children[i] = NULL;
     T.root->D = 0.0;
     for (int i = 0; i < DIM; i++){
         T.box_max[i] = P[0].x[i];
@@ -51,10 +53,10 @@ int Which_Child(Node* node, Particle p){
     return i;
 }
 
-Node* New_Node(Node* parent, int index){
-    Node* newNode = (Node*) malloc(sizeof(Node));
+Node* New_Node(Node* parent, int index, NodePool* Pool){
+    Node* newNode = alloc_node(Pool);
     newNode->parent = parent;
-    newNode->children = NULL;
+    for(int i = 0; i < 1<<DIM; i++) newNode->children[i] = NULL;
     newNode->npart = 0;
     newNode->i = -1;
     newNode->D = parent->D / 2.0;
@@ -64,11 +66,6 @@ Node* New_Node(Node* parent, int index){
         else newNode->c[j] = parent->c[j] + newNode->D / 2.0;
     }
     return newNode;
-}
-
-void Initialize_Children(Node* node){
-    node->children = (Node**) malloc((1 << DIM) * sizeof(Node*)); // bit operation: 1<<n = 2^n
-    for(int i = 0; i < 1<<DIM; i++) node->children[i] = NULL;
 }
 
 // procedure QuadInsert(i,n)   
@@ -91,21 +88,20 @@ void Initialize_Children(Node* node){
 //      endif
 
 // In principle: node == parent->children[index]
-void Tree_Insert(Node* node, Node* parent, int index, Particle* P, int i){
+void Tree_Insert(Node* node, Node* parent, int index, Particle* P, int i, NodePool* Pool){
     if(node == NULL){
-        node = New_Node(parent, index);
+        node = New_Node(parent, index, Pool);
         node->i = i;
     }
     else if(node->npart > 1){
         index = Which_Child(node, P[i]);
-        Tree_Insert(node->children[index], node, index, P, i);
+        Tree_Insert(node->children[index], node, index, P, i, Pool);
     }
     else if(node->npart == 1){
-        Initialize_Children(node);
         index = Which_Child(node, P[i]);
-        Tree_Insert(node->children[index], node, index, P, i);
+        Tree_Insert(node->children[index], node, index, P, i, Pool);
         index = Which_Child(node, P[node->i]);
-        Tree_Insert(node->children[index], node, index, P, node->i);
+        Tree_Insert(node->children[index], node, index, P, node->i, Pool);
         node->i = -1;
     }
     else{ // for initial insert when tree is empty
@@ -114,21 +110,9 @@ void Tree_Insert(Node* node, Node* parent, int index, Particle* P, int i){
     node->npart++;
 }
 
-void Clear_Empty(Node* node){
-    // if(node->npart == 0) return
-    for(int i = 0; i < 1<<DIM; i++){
-        if(node->children[i]->npart == 0) {
-            free(node->children[i]);
-            node->children[i] = NULL;
-        }
-        else if(node->children[i]->npart > 1) {
-            Clear_Empty(node->children[i]);
-        }
-    }
-}
 
 
-Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
+Node* Tree_Merge(Node* node1, Node* node2, Particle* P, NodePool* Pool){
     if(node1 == NULL || node1->npart == 0){ // node1 is empty
         return node2;
     }
@@ -136,9 +120,8 @@ Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
         return node1;
     }
     if(node1->npart == 1){
-        Initialize_Children(node1);
         int index = Which_Child(node1, P[node1->i]);
-        Node* child = New_Node(node1, index);
+        Node* child = New_Node(node1, index, Pool);
         child->npart = node1->npart;
         child->i = node1->i;
         child->cost = node1->cost; // Ideally we should +1 here, but then we'll need to update their ancestor, so let's not do it
@@ -146,9 +129,8 @@ Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
         for(int i = 0; i < DIM; i++) child->x[i] = node1->x[i];
     }
     if(node2->npart == 1){
-        Initialize_Children(node2);
         int index = Which_Child(node2, P[node2->i]);
-        Node* child = New_Node(node2, index);
+        Node* child = New_Node(node2, index, Pool);
         child->npart = node2->npart;
         child->i = node2->i;
         child->cost = node2->cost; // Ideally we should +1 here, but then we'll need to update their ancestor, so let's not do it
@@ -157,7 +139,7 @@ Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
     }
 
     for(int i = 0; i < 1<<DIM; i++){
-        node1->children[i] = Tree_Merge(node1->children[i], node2->children[i], P);
+        node1->children[i] = Tree_Merge(node1->children[i], node2->children[i], P, Pool);
     }
     node1->npart += node2->npart;
     node1->i = -1;
@@ -166,7 +148,6 @@ Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
     for(int i = 0; i < DIM; i++) node1->x[i] = (node1->x[i] * node1->m + node2->x[i] + node2->m) / m;
     node1->m = m;
 
-    free(node2); // memory leak ?
     return node1;
 }
 
@@ -179,10 +160,10 @@ Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
 //        ... leaves, whose siblings are not empty
 //        Traverse the tree (via, say, breadth first search), 
 //          eliminating empty leaves
-Tree Tree_Build(Particle* P, int npart, int tid){
-    Tree T = Initialize_Tree(P, npart);
+Tree Tree_Build(Particle* P, int npart, int tid, NodePool* Pool){
+    Tree T = Initialize_Tree(P, npart, Pool);
     for (int i = 0; i < npart; i++){
-         if(P[i].zone == tid) Tree_Insert(T.root, NULL, 0, P, i);
+         if(P[i].zone == tid) Tree_Insert(T.root, NULL, 0, P, i, Pool);
     }
     return T;
 }
@@ -560,7 +541,6 @@ void Free_Tree(Node* node){
         for(int i = 0; i < 1<<DIM; i++){
             Free_Tree(node->children[i]);
         }
-        free(node->children);
     }
     free(node);
 }
@@ -577,12 +557,14 @@ void total_force_tree(Particle* P, int npart){
     int OMP_NUM_THREADS = get_int("Openmp.THREADS", 1);
     omp_set_num_threads(OMP_NUM_THREADS);
     Tree T_local[OMP_NUM_THREADS];
+    NodePool* Pool[OMP_NUM_THREADS];
     
     #pragma omp parallel
     {
         // Build Tree and compute node info
         int tid = omp_get_thread_num();
-        T_local[tid] = Tree_Build(P, npart, tid);
+        Pool[tid] = create_node_pool(1 + npart / OMP_NUM_THREADS);
+        T_local[tid] = Tree_Build(P, npart, tid, Pool[tid]);
         Compute_m_and_x(T_local[tid].root, P, 0);
 
         #pragma omp barrier
@@ -591,7 +573,7 @@ void total_force_tree(Particle* P, int npart){
         int stride = 1;
         while(stride < OMP_NUM_THREADS){
             if((tid % (2 * stride)) == 0 && (tid + stride < OMP_NUM_THREADS)){
-                T_local[tid].root = Tree_Merge(T_local[tid].root, T_local[tid + stride].root, P);
+                T_local[tid].root = Tree_Merge(T_local[tid].root, T_local[tid + stride].root, P, Pool[tid]);
             }
             stride *= 2;
             #pragma omp barrier
@@ -618,7 +600,8 @@ void total_force_tree(Particle* P, int npart){
     }
     
     #else
-    Tree T = Tree_Build(P, npart, 0);
+    NodePool* Pool = create_node_pool(npart);
+    Tree T = Tree_Build(P, npart, 0, Pool);
     if(T.root->npart != npart){
         printf("BUG: number of particle in tree (%d) mismatch with npart (%d)\n", T.root->npart, npart);
         exit(EXIT_FAILURE);
@@ -686,7 +669,16 @@ void total_force_tree(Particle* P, int npart){
     #ifdef DEBUG
     gettimeofday(&t0, 0);
     #endif
-    Free_Tree(T.root);
+
+    #ifdef OMP
+    #pragma omp parallel
+    {
+        int tid = omp_get_thread_num();
+        free_node_pool(Pool[tid]);
+    }
+    #else
+    free_node_pool(Pool);
+    #endif
     #ifdef DEBUG
     gettimeofday(&t1, 0);
     printf("timeElapsed for Free_Tree(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
