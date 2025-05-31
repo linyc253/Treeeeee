@@ -141,7 +141,7 @@ Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
         Node* child = New_Node(node1, index);
         child->npart = node1->npart;
         child->i = node1->i;
-        child->cost = node1->cost + 1;
+        child->cost = node1->cost; // Ideally we should +1 here, but then we'll need to update their ancestor, so let's not do it
         child->m = node1->m;
         for(int i = 0; i < DIM; i++) child->x[i] = node1->x[i];
     }
@@ -151,7 +151,7 @@ Node* Tree_Merge(Node* node1, Node* node2, Particle* P){
         Node* child = New_Node(node2, index);
         child->npart = node2->npart;
         child->i = node2->i;
-        child->cost = node2->cost + 1;
+        child->cost = node2->cost; // Ideally we should +1 here, but then we'll need to update their ancestor, so let's not do it
         child->m = node2->m;
         for(int i = 0; i < DIM; i++) child->x[i] = node2->x[i];
     }
@@ -236,7 +236,7 @@ int Compute_m_and_x(Node* node, Particle* P, int depth){
     return 0;
 }
 
-int Set_Costzone(Node* node, Particle* P, long long cost, long long cost_tot, int OMP_NUM_THREADS, int tid){
+long long Set_Costzone(Node* node, Particle* P, long long cost, long long cost_tot, int OMP_NUM_THREADS, int tid){
     if(node == NULL) return cost;
 
     long long zone_left = cost / ((cost_tot + (long long)OMP_NUM_THREADS - 1) / (long long)OMP_NUM_THREADS);
@@ -590,17 +590,31 @@ void total_force_tree(Particle* P, int npart){
     for (int i = 1; i < OMP_NUM_THREADS; i++){
         T.root = Tree_Merge(T.root, T_local[i].root, P);
     }
+    
+    if(T.root->npart != npart){
+        printf("BUG: number of particle in tree (%d) mismatch with npart (%d)\n", T.root->npart, npart);
+        exit(EXIT_FAILURE);
+    }
 
-    if(OMP_NUM_THREADS > 0){
+    if(OMP_NUM_THREADS > 1){
         #pragma omp parallel
         {
             int tid = omp_get_thread_num();
-            Set_Costzone(T.root, P, 0, T.root->cost, OMP_NUM_THREADS, tid);
+            long long cost = Set_Costzone(T.root, P, 0, T.root->cost, OMP_NUM_THREADS, tid);
+            if(T.root->cost != cost){
+                printf("BUG: number of cost in tree (%lld) mismatch with cost (%lld)\n", T.root->cost, cost);
+                exit(EXIT_FAILURE);
+            }
         }
+        
     }
-
+    
     #else
     Tree T = Tree_Build(P, npart, 0);
+    if(T.root->npart != npart){
+        printf("BUG: number of particle in tree (%d) mismatch with npart (%d)\n", T.root->npart, npart);
+        exit(EXIT_FAILURE);
+    }
     Compute_m_and_x(T.root, P, 0);
     #endif
     

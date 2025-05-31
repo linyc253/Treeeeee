@@ -68,6 +68,11 @@ extern "C" void Particle_Cell_Force_gpu(Coord4* P, int ng, Coord4* C, int nl, Co
     Particle_Cell_Kernel<<<blocksPerGrid, threadsPerBlock>>>(d_P, ng, d_C, nl, d_F, (float)epsilon);
     cudaDeviceSynchronize();
 
+    if(cudaSuccess != cudaGetLastError()){
+        printf("CUDA Error!!!\n");
+        exit(EXIT_FAILURE);
+    }
+
     // Transfer data back to host memory
     cudaMemcpy(F, d_F, sizeof(float3) * ng, cudaMemcpyDeviceToHost);
 
