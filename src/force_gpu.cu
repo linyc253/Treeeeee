@@ -4,7 +4,6 @@
 #include "tree.h"
 #include "particle.h"
 
-// Not optimized (too many global memory access)
 __global__ void Particle_Cell_Kernel(float4* P, int ng, float4* C, int nl, float3* F, float epsilon) {
     int id = blockDim.x * blockIdx.x + threadIdx.x;
     int ip = id % ng;
@@ -15,12 +14,11 @@ __global__ void Particle_Cell_Kernel(float4* P, int ng, float4* C, int nl, float
         if(id < ng * nl){
             int ic = id / ng;
             float3 dx;
-            float r_sq = 0.0;
             dx.x = p.x - C[ic].x;
             dx.y = p.y - C[ic].y;
             dx.z = p.z - C[ic].z;
-            r_sq = dx.x * dx.x + dx.y * dx.y + dx.z * dx.z;
-            float F_mag = -(p.w * C[ic].w) / powf(r_sq + epsilon*epsilon, 1.5);
+            float inv_r = rsqrtf(dx.x * dx.x + dx.y * dx.y + dx.z * dx.z + epsilon * epsilon);
+            float F_mag = -(p.w * C[ic].w) * inv_r * inv_r * inv_r;
             f.x += F_mag * dx.x;
             f.y += F_mag * dx.y;
             f.z += F_mag * dx.z;
@@ -29,12 +27,11 @@ __global__ void Particle_Cell_Kernel(float4* P, int ng, float4* C, int nl, float
         else if(id < ng * (nl + ng)){
             int ipp = id / ng - nl;
             float3 dx;
-            float r_sq = 0.0;
             dx.x = p.x - P[ipp].x;
             dx.y = p.y - P[ipp].y;
             dx.z = p.z - P[ipp].z;
-            r_sq = dx.x * dx.x + dx.y * dx.y + dx.z * dx.z;
-            float F_mag = -(p.w * P[ipp].w) / powf(r_sq + epsilon*epsilon, 1.5);
+            float inv_r = rsqrtf(dx.x * dx.x + dx.y * dx.y + dx.z * dx.z + epsilon * epsilon);
+            float F_mag = -(p.w * P[ipp].w) * inv_r * inv_r * inv_r;
             f.x += F_mag * dx.x;
             f.y += F_mag * dx.y;
             f.z += F_mag * dx.z;
@@ -44,7 +41,6 @@ __global__ void Particle_Cell_Kernel(float4* P, int ng, float4* C, int nl, float
     atomicAdd(&F[ip].x, f.x);
     atomicAdd(&F[ip].y, f.y);
     atomicAdd(&F[ip].z, f.z);
-    __syncthreads();
 }
 
 extern "C" void Particle_Cell_Force_gpu(Coord4* P, int ng, Coord4* C, int nl, Coord3* F, double epsilon, int threadsPerBlock){
@@ -66,9 +62,8 @@ extern "C" void Particle_Cell_Force_gpu(Coord4* P, int ng, Coord4* C, int nl, Co
     // Executing kernel
     int blocksPerGrid = ng;
     Particle_Cell_Kernel<<<blocksPerGrid, threadsPerBlock>>>(d_P, ng, d_C, nl, d_F, (float)epsilon);
-    cudaDeviceSynchronize();
 
-    if(cudaSuccess != cudaGetLastError()){
+    if(cudaSuccess != cudaDeviceSynchronize()){
         printf("CUDA Error!!!\n");
         exit(EXIT_FAILURE);
     }
