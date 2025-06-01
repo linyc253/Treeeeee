@@ -145,7 +145,7 @@ Node* Tree_Merge(Node* node1, Node* node2, Particle* P, NodePool* Pool){
     node1->i = -1;
     node1->cost += node2->cost;
     double m = node1->m + node2->m;
-    for(int i = 0; i < DIM; i++) node1->x[i] = (node1->x[i] * node1->m + node2->x[i] + node2->m) / m;
+    for(int i = 0; i < DIM; i++) node1->x[i] = (node1->x[i] * node1->m + node2->x[i] * node2->m) / m;
     node1->m = m;
 
     return node1;
