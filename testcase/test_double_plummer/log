@@ -3085,4 +3085,82 @@ Step  2693: t = 194.898775,  dt = 0.054456  timeElapsed: 504 ms
 Step  2694: t = 194.976360,  dt = 0.077586  timeElapsed: 499 ms
 Step  2695: t = 195.051337,  dt = 0.074977  timeElapsed: 496 ms
 Data written to DATA/00390.dat (t = 195.051)
-Step  2696: t = 195.123971,  dt = 0.072634  timeEla
+Step  2696: t = 195.123971,  dt = 0.072634  timeElapsed: 499 ms
+Step  2697: t = 195.200326,  dt = 0.076356  timeElapsed: 504 ms
+Step  2698: t = 195.276855,  dt = 0.076528  timeElapsed: 500 ms
+Step  2699: t = 195.341377,  dt = 0.064522  timeElapsed: 505 ms
+Step  2700: t = 195.419099,  dt = 0.077722  timeElapsed: 500 ms
+Step  2701: t = 195.495667,  dt = 0.076568  timeElapsed: 507 ms
+Step  2702: t = 195.573796,  dt = 0.078129  timeElapsed: 492 ms
+Data written to DATA/00391.dat (t = 195.574)
+Step  2703: t = 195.651538,  dt = 0.077742  timeElapsed: 500 ms
+Step  2704: t = 195.729853,  dt = 0.078315  timeElapsed: 496 ms
+Step  2705: t = 195.806329,  dt = 0.076476  timeElapsed: 503 ms
+Step  2706: t = 195.873302,  dt = 0.066973  timeElapsed: 498 ms
+Step  2707: t = 195.949840,  dt = 0.076539  timeElapsed: 500 ms
+Step  2708: t = 195.998369,  dt = 0.048529  timeElapsed: 508 ms
+Step  2709: t = 196.076729,  dt = 0.078360  timeElapsed: 500 ms
+Data written to DATA/00392.dat (t = 196.077)
+Step  2710: t = 196.155339,  dt = 0.078609  timeElapsed: 497 ms
+Step  2711: t = 196.230090,  dt = 0.074751  timeElapsed: 498 ms
+Step  2712: t = 196.299766,  dt = 0.069676  timeElapsed: 504 ms
+Step  2713: t = 196.377340,  dt = 0.077575  timeElapsed: 503 ms
+Step  2714: t = 196.455762,  dt = 0.078422  timeElapsed: 504 ms
+Step  2715: t = 196.531835,  dt = 0.076072  timeElapsed: 501 ms
+Data written to DATA/00393.dat (t = 196.532)
+Step  2716: t = 196.608804,  dt = 0.076969  timeElapsed: 506 ms
+Step  2717: t = 196.685458,  dt = 0.076655  timeElapsed: 503 ms
+Step  2718: t = 196.763456,  dt = 0.077997  timeElapsed: 513 ms
+Step  2719: t = 196.841208,  dt = 0.077752  timeElapsed: 499 ms
+Step  2720: t = 196.918013,  dt = 0.076805  timeElapsed: 511 ms
+Step  2721: t = 196.995570,  dt = 0.077558  timeElapsed: 504 ms
+Step  2722: t = 197.069464,  dt = 0.073894  timeElapsed: 507 ms
+Data written to DATA/00394.dat (t = 197.069)
+Step  2723: t = 197.110664,  dt = 0.041200  timeElapsed: 507 ms
+Step  2724: t = 197.185675,  dt = 0.075011  timeElapsed: 506 ms
+Step  2725: t = 197.263235,  dt = 0.077560  timeElapsed: 504 ms
+Step  2726: t = 197.341661,  dt = 0.078426  timeElapsed: 514 ms
+Step  2727: t = 197.417992,  dt = 0.076331  timeElapsed: 509 ms
+Step  2728: t = 197.476004,  dt = 0.058012  timeElapsed: 506 ms
+Step  2729: t = 197.507503,  dt = 0.031499  timeElapsed: 514 ms
+Data written to DATA/00395.dat (t = 197.508)
+Step  2730: t = 197.585398,  dt = 0.077895  timeElapsed: 501 ms
+Step  2731: t = 197.661594,  dt = 0.076196  timeElapsed: 494 ms
+Step  2732: t = 197.733990,  dt = 0.072396  timeElapsed: 510 ms
+Step  2733: t = 197.764970,  dt = 0.030980  timeElapsed: 504 ms
+Step  2734: t = 197.841187,  dt = 0.076218  timeElapsed: 500 ms
+Step  2735: t = 197.919115,  dt = 0.077927  timeElapsed: 506 ms
+Step  2736: t = 197.997601,  dt = 0.078486  timeElapsed: 513 ms
+Step  2737: t = 198.074551,  dt = 0.076950  timeElapsed: 497 ms
+Data written to DATA/00396.dat (t = 198.075)
+Step  2738: t = 198.151890,  dt = 0.077339  timeElapsed: 507 ms
+Step  2739: t = 198.229310,  dt = 0.077420  timeElapsed: 513 ms
+Step  2740: t = 198.305265,  dt = 0.075955  timeElapsed: 579 ms
+Step  2741: t = 198.383819,  dt = 0.078554  timeElapsed: 593 ms
+Step  2742: t = 198.461265,  dt = 0.077446  timeElapsed: 588 ms
+Step  2743: t = 198.536999,  dt = 0.075734  timeElapsed: 555 ms
+Data written to DATA/00397.dat (t = 198.537)
+Step  2744: t = 198.615737,  dt = 0.078738  timeElapsed: 514 ms
+Step  2745: t = 198.692544,  dt = 0.076807  timeElapsed: 506 ms
+Step  2746: t = 198.766329,  dt = 0.073785  timeElapsed: 511 ms
+Step  2747: t = 198.842274,  dt = 0.075945  timeElapsed: 501 ms
+Step  2748: t = 198.920193,  dt = 0.077920  timeElapsed: 501 ms
+Step  2749: t = 198.997959,  dt = 0.077765  timeElapsed: 516 ms
+Step  2750: t = 199.076220,  dt = 0.078261  timeElapsed: 503 ms
+Data written to DATA/00398.dat (t = 199.076)
+Step  2751: t = 199.153103,  dt = 0.076884  timeElapsed: 513 ms
+Step  2752: t = 199.232064,  dt = 0.078961  timeElapsed: 518 ms
+Step  2753: t = 199.303053,  dt = 0.070988  timeElapsed: 532 ms
+Step  2754: t = 199.376850,  dt = 0.073798  timeElapsed: 526 ms
+Step  2755: t = 199.455520,  dt = 0.078670  timeElapsed: 521 ms
+Step  2756: t = 199.517991,  dt = 0.062470  timeElapsed: 523 ms
+Data written to DATA/00399.dat (t = 199.518)
+Step  2757: t = 199.594131,  dt = 0.076140  timeElapsed: 524 ms
+Step  2758: t = 199.669591,  dt = 0.075460  timeElapsed: 513 ms
+Step  2759: t = 199.748560,  dt = 0.078969  timeElapsed: 519 ms
+Step  2760: t = 199.824404,  dt = 0.075844  timeElapsed: 514 ms
+Step  2761: t = 199.882986,  dt = 0.058582  timeElapsed: 524 ms
+Step  2762: t = 199.961734,  dt = 0.078748  timeElapsed: 537 ms
+Step  2763: t = 200.000000,  dt = 0.038266  timeElapsed: 532 ms
+Data written to DATA/00400.dat (t = 200.000)
+Data written to Final.dat

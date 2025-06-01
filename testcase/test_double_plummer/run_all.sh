@@ -4,6 +4,7 @@ PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
 ### Generate data (modfy N below)
 # N is the particle number for "each" plummer
 $PYTHON Initial_generator.py -N 50000 > Initial.dat
+$PYTHON plot.py
 
 ### Run METHOD = 2
     cat > Input_Parameter.ini<<!

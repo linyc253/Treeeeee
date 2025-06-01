@@ -63,7 +63,7 @@ fig = plt.figure(figsize=(8, 8))
 ax = fig.add_subplot()
 curve = plt.scatter(r_abs,v_tan,s=0.1)
 ax.set_xlim(0,7000)
-ax.set_ylim(0,2.0)
+ax.set_ylim(0,4.5)
 
 # Save figure
 fig.savefig( "velocity_curve.png" )
