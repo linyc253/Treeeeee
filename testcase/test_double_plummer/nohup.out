@@ -1,0 +1,49 @@
+ffmpeg version 3.4.13 Copyright (c) 2000-2023 the FFmpeg developers
+  built with gcc 4.8.5 (GCC) 20150623 (Red Hat 4.8.5-44)
+  configuration: --prefix=/usr --bindir=/usr/bin --datadir=/usr/share/ffmpeg --docdir=/usr/share/doc/ffmpeg --incdir=/usr/include/ffmpeg --libdir=/usr/lib64 --mandir=/usr/share/man --arch=x86_64 --optflags='-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic' --extra-ldflags='-Wl,-z,relro ' --extra-cflags=' ' --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libvo-amrwbenc --enable-version3 --enable-bzlib --disable-crystalhd --enable-fontconfig --enable-gcrypt --enable-gnutls --enable-ladspa --enable-libass --enable-libbluray --enable-libcdio --enable-libdrm --enable-indev=jack --enable-libfreetype --enable-libfribidi --enable-libgsm --enable-libmp3lame --enable-nvenc --enable-openal --enable-opencl --enable-opengl --enable-libopenjpeg --enable-libopus --disable-encoder=libopus --enable-libpulse --enable-librsvg --enable-libsoxr --enable-libspeex --enable-libtheora --enable-libvorbis --enable-libv4l2 --enable-libvidstab --enable-libvpx --enable-libx264 --enable-libx265 --enable-libxvid --enable-libzvbi --enable-avfilter --enable-avresample --enable-libmodplug --enable-postproc --enable-pthreads --disable-static --enable-shared --enable-gpl --disable-debug --disable-stripping --shlibdir=/usr/lib64 --enable-libmfx --enable-runtime-cpudetect
+  libavutil      55. 78.100 / 55. 78.100
+  libavcodec     57.107.100 / 57.107.100
+  libavformat    57. 83.100 / 57. 83.100
+  libavdevice    57. 10.100 / 57. 10.100
+  libavfilter     6.107.100 /  6.107.100
+  libavresample   3.  7.  0 /  3.  7.  0
+  libswscale      4.  8.100 /  4.  8.100
+  libswresample   2.  9.100 /  2.  9.100
+  libpostproc    54.  7.100 / 54.  7.100
+Input #0, image2, from 'Figure/%05d.png':
+  Duration: 00:00:33.33, start: 0.000000, bitrate: N/A
+    Stream #0:0: Video: png, rgba(pc), 800x800 [SAR 3937:3937 DAR 1:1], 12 fps, 12 tbr, 12 tbn, 12 tbc
+Stream mapping:
+  Stream #0:0 -> #0:0 (png (native) -> h264 (libx264))
+Press [q] to stop, [?] for help
+[libx264 @ 0x134b280] using SAR=1/1
+[libx264 @ 0x134b280] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX
+[libx264 @ 0x134b280] profile High 4:4:4 Predictive, level 3.1, 4:4:4 8-bit
+[libx264 @ 0x134b280] 264 - core 148 r2795 aaa9aa8 - H.264/MPEG-4 AVC codec - Copyleft 2003-2017 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=4 threads=12 lookahead_threads=2 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=12 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+Output #0, mp4, to 'plummer2.mp4':
+  Metadata:
+    encoder         : Lavf57.83.100
+    Stream #0:0: Video: h264 (libx264) (avc1 / 0x31637661), yuv444p, 800x800 [SAR 1:1 DAR 1:1], q=-1--1, 12 fps, 12288 tbn, 12 tbc
+    Metadata:
+      encoder         : Lavc57.107.100 libx264
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: -1
+frame=   81 fps=0.0 q=26.0 size=     256kB time=00:00:01.83 bitrate=1144.1kbits/s speed=3.57x    frame=  148 fps=146 q=26.0 size=    1024kB time=00:00:07.41 bitrate=1131.1kbits/s speed=7.31x    frame=  212 fps=139 q=26.0 size=    1792kB time=00:00:12.75 bitrate=1151.4kbits/s speed=8.36x    frame=  273 fps=135 q=26.0 size=    2816kB time=00:00:17.83 bitrate=1293.6kbits/s speed= 8.8x    frame=  324 fps=127 q=26.0 size=    3840kB time=00:00:22.08 bitrate=1424.5kbits/s speed=8.68x    frame=  369 fps=121 q=26.0 size=    4608kB time=00:00:25.83 bitrate=1461.3kbits/s speed=8.48x    frame=  400 fps=104 q=-1.0 Lsize=    6564kB time=00:00:33.08 bitrate=1625.4kbits/s speed=8.61x    
+video:6559kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.085361%
+[libx264 @ 0x134b280] frame I:3     Avg QP:16.37  size: 26156
+[libx264 @ 0x134b280] frame P:101   Avg QP:18.96  size: 21698
+[libx264 @ 0x134b280] frame B:296   Avg QP:23.03  size: 15019
+[libx264 @ 0x134b280] consecutive B-frames:  1.0%  0.5%  1.5% 97.0%
+[libx264 @ 0x134b280] mb I  I16..4:  7.1% 69.7% 23.3%
+[libx264 @ 0x134b280] mb P  I16..4:  1.1%  4.8% 11.9%  P16..4:  7.0%  4.1%  1.4%  0.0%  0.0%    skip:69.7%
+[libx264 @ 0x134b280] mb B  I16..4:  0.1%  1.4%  2.0%  B16..8: 14.2%  8.3%  4.8%  direct: 1.7%  skip:67.6%  L0:44.1% L1:39.4% BI:16.5%
+[libx264 @ 0x134b280] 8x8 transform intra:35.1% inter:3.8%
+[libx264 @ 0x134b280] coded y,u,v intra: 55.9% 42.4% 9.0% inter: 6.8% 1.1% 0.0%
+[libx264 @ 0x134b280] i16 v,h,dc,p: 69% 21%  9%  0%
+[libx264 @ 0x134b280] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 18%  6% 59%  3%  3%  2%  3%  3%  3%
+[libx264 @ 0x134b280] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 25% 14% 27%  6%  6%  5%  5%  5%  6%
+[libx264 @ 0x134b280] Weighted P-Frames: Y:0.0% UV:0.0%
+[libx264 @ 0x134b280] ref P L0: 62.3%  0.9% 21.3% 15.6%
+[libx264 @ 0x134b280] ref B L0: 82.0% 14.2%  3.8%
+[libx264 @ 0x134b280] ref B L1: 94.5%  5.5%
+[libx264 @ 0x134b280] kb/s:1611.72
