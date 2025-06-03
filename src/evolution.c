@@ -69,12 +69,14 @@ double Evolution(Particle* P, int npart, double dt_max, double dt1) {
 }
 
 void Energy(Particle* P, int npart){
-    //int METHOD = get_int("BasicSetting.METHOD", 2);
+    int METHOD = get_int("BasicSetting.METHOD", 2);
     double V = 0.0, K = 0.0;
+    double epsilon = get_double("BasicSetting.EPSILON", 1e-4);
 
     // brute force not implemented yet...
 
-    V = total_force_tree(P, npart, 1) / 2.0; 
+    if(METHOD == 1) V = total_potential(P, npart, epsilon); 
+    else if(METHOD == 2) V = total_force_tree(P, npart, 1) / 2.0; 
 
     for (int i = 0; i < npart; i++) {
         for (int j = 0; j < DIM; j++) {

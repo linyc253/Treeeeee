@@ -358,12 +358,13 @@ int compute_quadrupole(Node* node, Particle* particles){
 // Calculate gravitational force by (G = 1)
 //  a.f += -(a.m * b.m / (|r|^2 + epsilon^2)^{3/2}) r
 // where the vector r = a.x - b.x
-void compute_force(Coord4* group_xyzm, Coord4* cell_xyzm, Coord3* force_xyz, int number_in_group, int filled_cell, double epsilon){
+double compute_force(Coord4* group_xyzm, Coord4* cell_xyzm, Coord3* force_xyz, int number_in_group, int filled_cell, double epsilon, int compute_energy){
     for (int i = 0; i < number_in_group; i++) {
         for (int j = 0; j < 3; j++) {
             force_xyz[i].x[j] = 0;
         }
     }
+    double V = 0.0;
     // particle to node 
     for (int p = 0; p < number_in_group; p++) {
         for (int c = 0; c < filled_cell; c++) {
@@ -373,8 +374,13 @@ void compute_force(Coord4* group_xyzm, Coord4* cell_xyzm, Coord3* force_xyz, int
                 r[i] = group_xyzm[p].x[i] - cell_xyzm[c].x[i];
                 r_norm += pow(r[i], 2);
             }
-            for (int i = 0; i < DIM; i++) {
-                force_xyz[p].x[i] += -group_xyzm[p].m * cell_xyzm[c].m * r[i] / pow(r_norm + pow(epsilon, 2), 1.5);
+            if(compute_energy){
+                V += (double)(-group_xyzm[p].m * cell_xyzm[c].m / pow(r_norm + pow(epsilon, 2), 0.5));
+            }
+            else{
+                for (int i = 0; i < DIM; i++) {
+                    force_xyz[p].x[i] += -group_xyzm[p].m * cell_xyzm[c].m * r[i] / pow(r_norm + pow(epsilon, 2), 1.5);
+                }
             }
         }
     }
@@ -390,11 +396,18 @@ void compute_force(Coord4* group_xyzm, Coord4* cell_xyzm, Coord3* force_xyz, int
                 r[i] = group_xyzm[p].x[i] - group_xyzm[c].x[i];
                 r_norm += pow(r[i], 2);
             }
-            for (int i = 0; i < DIM; i++) {
-                force_xyz[p].x[i] += -group_xyzm[p].m * group_xyzm[c].m * r[i] / pow(r_norm + pow(epsilon, 2), 1.5);
+            if(compute_energy){
+                V += (double)(-group_xyzm[p].m * group_xyzm[c].m / pow(r_norm + pow(epsilon, 2), 0.5));
             }
+            else{
+                for (int i = 0; i < DIM; i++) {
+                    force_xyz[p].x[i] += -group_xyzm[p].m * group_xyzm[c].m * r[i] / pow(r_norm + pow(epsilon, 2), 1.5);
+                }
+            }
+            
         }
     }
+    return V;
 }
 
 // fill particle coordinates and mass to grouping array
@@ -490,11 +503,13 @@ double compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm,
         int threadsPerBlock = get_int("GPU.threadsPerBlock", 32);
         V = Particle_Cell_Force_gpu(groups_xyzm, number_in_group, cell_xyzm, filled, force_xyz, epsilon, threadsPerBlock, compute_energy);
         #else
-        compute_force(groups_xyzm, cell_xyzm, force_xyz, number_in_group, filled, epsilon);
+        V = compute_force(groups_xyzm, cell_xyzm, force_xyz, number_in_group, filled, epsilon, compute_energy);
         #endif
-        for (int i = 0; i < number_in_group; i++) {
-            for (int j = 0; j < DIM; j++) {
-                particles[particle_indices[i]].f[j] += force_xyz[i].x[j];
+        if(!compute_energy){
+            for (int i = 0; i < number_in_group; i++) {
+                for (int j = 0; j < DIM; j++) {
+                    particles[particle_indices[i]].f[j] += force_xyz[i].x[j];
+                }
             }
         }
         free(cell_xyzm);
@@ -509,12 +524,14 @@ double compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm,
         int threadsPerBlock = get_int("GPU.threadsPerBlock", 32);
         V = Particle_Cell_Force_gpu(groups_xyzm, number_in_group, cell_xyzm, filled, force_xyz, epsilon, threadsPerBlock, compute_energy);
         #else
-        compute_force(groups_xyzm, cell_xyzm, force_xyz, number_in_group, filled, epsilon);
+        V = compute_force(groups_xyzm, cell_xyzm, force_xyz, number_in_group, filled, epsilon, compute_energy);
         #endif
-        for (int i = 0; i < number_in_group; i++) {
-            for (int j = 0; j < DIM; j++) {
-                particles[particle_indices[i]].f[j] += force_xyz[i].x[j];
-                filled++;
+        if(!compute_energy){
+            for (int i = 0; i < number_in_group; i++) {
+                for (int j = 0; j < DIM; j++) {
+                    particles[particle_indices[i]].f[j] += force_xyz[i].x[j];
+                    filled++;
+                }
             }
         }
         free(cell_xyzm);
@@ -639,7 +656,7 @@ double total_force_tree(Particle* P, int npart, int compute_energy){
     Node** group_nodes = (Node**) malloc(npart * sizeof(Node*));
     assign_group(T.root, P, n_crit, &n_groups, group_nodes);
 
-    Zero_Force(P, npart);
+    if(!compute_energy) Zero_Force(P, npart);
 
     double theta = get_double("Tree.THETA", 0.01);
     double epsilon = get_double("BasicSetting.EPSILON", 1e-10);
@@ -649,7 +666,7 @@ double total_force_tree(Particle* P, int npart, int compute_energy){
     #ifdef OMP
     int OMP_CHUNK = get_int("Openmp.CHUNK", 1);
     omp_set_num_threads(OMP_NUM_THREADS);
-    #pragma omp parallel for schedule(dynamic, OMP_CHUNK)
+    #pragma omp parallel for schedule(dynamic, OMP_CHUNK) reduction(+:V)
     #endif
     for (int g = 0; g < n_groups; g++) {
         int number_in_group = group_nodes[g]->npart;
