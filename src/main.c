@@ -31,6 +31,7 @@ int main(){
     if(RESTART == 0){
         const char* PARTICLE_FILE = get_string("BasicSetting.PARTICLE_FILE", "Initial.dat");
         npart = Read_Particle_File(&P, PARTICLE_FILE);
+        Initialize_Energy_File("Energy.dat");
     }
     else{
         char PARTICLE_FILE[32];
@@ -75,6 +76,12 @@ int main(){
             sprintf(filename, "%s/%05d.dat", OUTDIR, time_step + RESTART);  
             Write_Particle_File(P, npart, filename);
             printf("Data written to %s (t = %.3f)\n", filename, t);
+
+            gettimeofday(&t0, 0);
+            Energy(P, npart);
+            gettimeofday(&t1, 0);
+
+            printf("Perform energy calculation  timeElapsed: %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000);
         }
         
 

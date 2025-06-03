@@ -477,9 +477,9 @@ void traverse_node(Node* node, Node* group_node, Coord4* cell_xyzm, int* filled,
 }
 
 // construct interaction list
-void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, Node* group_node, int* particle_indices,
-                         int n_particles, int number_in_group, double theta, int poles, double epsilon){
-
+double compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, Node* group_node, int* particle_indices,
+                         int n_particles, int number_in_group, double theta, int poles, double epsilon, int compute_energy){
+    double V = 0.0;
     if (poles == 1) {
         Coord4* cell_xyzm = (Coord4*) malloc((n_particles - number_in_group) * sizeof(Coord4));
         int filled = 0;
@@ -488,7 +488,7 @@ void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, N
         Coord3 force_xyz[number_in_group];
         #ifdef CUDA
         int threadsPerBlock = get_int("GPU.threadsPerBlock", 32);
-        Particle_Cell_Force_gpu(groups_xyzm, number_in_group, cell_xyzm, filled, force_xyz, epsilon, threadsPerBlock);
+        V = Particle_Cell_Force_gpu(groups_xyzm, number_in_group, cell_xyzm, filled, force_xyz, epsilon, threadsPerBlock, compute_energy);
         #else
         compute_force(groups_xyzm, cell_xyzm, force_xyz, number_in_group, filled, epsilon);
         #endif
@@ -507,7 +507,7 @@ void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, N
         Coord3 force_xyz[number_in_group];
         #ifdef CUDA
         int threadsPerBlock = get_int("GPU.threadsPerBlock", 32);
-        Particle_Cell_Force_gpu(groups_xyzm, number_in_group, cell_xyzm, filled, force_xyz, epsilon, threadsPerBlock);
+        V = Particle_Cell_Force_gpu(groups_xyzm, number_in_group, cell_xyzm, filled, force_xyz, epsilon, threadsPerBlock, compute_energy);
         #else
         compute_force(groups_xyzm, cell_xyzm, force_xyz, number_in_group, filled, epsilon);
         #endif
@@ -522,7 +522,7 @@ void compute_interaction(Node* root, Particle* particles, Coord4* groups_xyzm, N
     else {
         printf("The parameter POLES looks very funny, please don't try to break the program\n");
     }
-    return;
+    return V;
 }
 
 // Set all the force to zero
@@ -546,7 +546,7 @@ void Free_Tree(Node* node){
 }
 
 // Main routine to calculate the tree force
-void total_force_tree(Particle* P, int npart){
+double total_force_tree(Particle* P, int npart, int compute_energy){
     // ---------------1. Build the Tree---------------
     #ifdef DEBUG
     struct timeval t0, t1;
@@ -645,6 +645,7 @@ void total_force_tree(Particle* P, int npart){
     double epsilon = get_double("BasicSetting.EPSILON", 1e-10);
 
     // calculate force with groups_xyzm[i]
+    double V = 0.0;
     #ifdef OMP
     int OMP_CHUNK = get_int("Openmp.CHUNK", 1);
     omp_set_num_threads(OMP_NUM_THREADS);
@@ -657,7 +658,7 @@ void total_force_tree(Particle* P, int npart){
         int filled = 0;
         
         fill_xyzm(group_nodes[g], P, groups_xyzm, particle_indices, &filled);
-        compute_interaction(T.root, P, groups_xyzm, group_nodes[g], particle_indices, npart, number_in_group, theta, poles, epsilon);
+        V += compute_interaction(T.root, P, groups_xyzm, group_nodes[g], particle_indices, npart, number_in_group, theta, poles, epsilon, compute_energy);
         free(groups_xyzm);
         free(particle_indices);
     }
@@ -684,4 +685,6 @@ void total_force_tree(Particle* P, int npart){
     printf("timeElapsed for Free_Tree(): %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000); 
     #endif
     free(group_nodes);
+
+    return V;
 }

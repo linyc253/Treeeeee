@@ -19,4 +19,6 @@ typedef struct {
 
 int Read_Particle_File(Particle** P, const char* PARTICLE_FILE);
 void Write_Particle_File(Particle* P, int npart, const char* filename);
+void Write_Energy_File(double K, double V, double E, const char* filename);
+void Initialize_Energy_File(const char* filename);
 #endif

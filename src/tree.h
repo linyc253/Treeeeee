@@ -37,6 +37,6 @@ typedef struct{
     float x[3];
 } Coord3;
 
-void total_force_tree(Particle* P, int npart);
+double total_force_tree(Particle* P, int npart, int compute_energy);
 
 #endif

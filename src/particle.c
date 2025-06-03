@@ -56,3 +56,18 @@ void Write_Particle_File(Particle* P, int npart, const char* filename){
     fclose(ptr);
     return;
 }
+
+void Initialize_Energy_File(const char* filename){
+    FILE* ptr = fopen(filename, "w");
+    fprintf(ptr, "Kinetic     Potential     Total_Energy\n");
+    fclose(ptr);
+    return;
+}
+
+
+void Write_Energy_File(double K, double V, double E, const char* filename){
+    FILE* ptr = fopen(filename, "a");
+    fprintf(ptr, "%lf %lf %lf\n", K, V, E);
+    fclose(ptr);
+    return;
+}

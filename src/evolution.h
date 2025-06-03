@@ -6,5 +6,6 @@
 double Evolution(Particle* P, int npart, double dt_max, double dt);
 double Max(double a, double b);
 double Min(double a, double b);
+void Energy(Particle* P, int npart);
 
 #endif
