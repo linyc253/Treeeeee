@@ -43,7 +43,7 @@ int main(){
         step++;
 
         // Update P[:].x & P[:].v & P[:].f
-        dt = Evolution(P, npart, Min(DT, T_TOT - t), dt);
+        dt = Evolution(P, npart, Min(DT, T_TOT - t));
         t = Min(t + dt + 1e-15, T_TOT);
 
         gettimeofday(&t1, 0);
