@@ -1,5 +1,5 @@
 ### You need to modify 'python' to your default python executable
-PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
+PYTHON=/home/hsuanyulin/anaconda3/bin/python
 
 ### Generate data (modfy N below)
 # N is the particle number for "each" plummer
@@ -11,6 +11,9 @@ $PYTHON Initial_generator.py -N 10000 > Initial.dat
 DIM = 3                      # Dimension of the system (default: 3)
 METHOD = 2                   # Method 1:brute_force 
                              #        2:tree_algo (default)
+INTEGRATOR = 2               # Integrator 1:DKD
+                             #            2:KDK
+                             #            3:RK4  don't use
 PARTICLE_FILE = Initial.dat  # filename of particle file (default: Initial.dat)
 T_TOT = 100                   # total evolution time
 DT = 0.03                    # maximal time interval
