@@ -67,7 +67,7 @@ __global__ void Particle_Cell_Kernel_Potential(float4* P, int ng, float4* C, int
             dx.y = p.y - P[ipp].y;
             dx.z = p.z - P[ipp].z;
             float inv_r = rsqrtf(dx.x * dx.x + dx.y * dx.y + dx.z * dx.z + epsilon * epsilon);
-            f.x += -(p.w * P[ipp].w) * inv_r;
+            if(ipp != ip) f.x += -(p.w * P[ipp].w) * inv_r;
         }
         id += blockDim.x * gridDim.x;
     }
