@@ -1,1 +1,1 @@
-rm DATA/*.dat Figure/*.png Input_Parameter.ini Plummer2.gif log plummer2.mp4 Initial.png *.dat
+rm DATA/*.dat Figure/*.png Input_Parameter.ini Plummer2.gif log plummer2.mp4 Initial.png *.dat *.png

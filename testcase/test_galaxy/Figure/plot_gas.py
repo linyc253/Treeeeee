@@ -9,8 +9,10 @@ data_dir = "../DATA/"
 parser = argparse.ArgumentParser()
 parser.add_argument("-F", help = "Number of figures")
 parser.add_argument("-H", default=0, help = "Turn on/off the halo. Default:0.")
+parser.add_argument("-B", default=0, help = "Existence of SMBN. Default:0.")
 args = parser.parse_args()
 halo = int(args.H)
+BH = int(args.B)
 N_f = int(args.F)/2
 N_f = int(N_f)
 
@@ -25,13 +27,18 @@ for i in range(1,1+N_f):
     # Parse the number of particles
     num_particles = int(lines[0].strip())
     if halo == 1:
+        if BH == 1:
+            num_particles -= 1
         num_particles = int(num_particles/5)
 
     # Positions:
     if halo == 1:
         positions = np.array([
             list(map(float, lines[i].strip().split()))
-            for i in range(1 + 5*num_particles, 1 + 6 * num_particles)
+            if BH == 1:
+                for i in range(2 + 5*num_particles, 2 + 6 * num_particles)
+            else:
+                for i in range(1 + 5*num_particles, 1 + 6 * num_particles)
         ])
     else:
         positions = np.array([

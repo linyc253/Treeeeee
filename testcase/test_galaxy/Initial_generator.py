@@ -4,6 +4,7 @@ import argparse
 # Parameters
 G = 1                       # Newton's gravity constant
 M = 1000                    # total mass
+B = M*10**(-3)              # the mass of SMBH in the center
 a = 250                     # disk scale radius
 b = 35                      # disk scale height
 c = 50                      # bulge scale radius
@@ -15,10 +16,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-N", help = "Number of particles")
 parser.add_argument("-S", default=0, help = "Turn on/off the spiral. Default:0.")
 parser.add_argument("-H", default=0, help = "Turn on/off the halo. Default:0.")
+parser.add_argument("-B", default=0, help = "Existence of SMBN. Default:0.")
 args = parser.parse_args()
 N       = int(args.N)               # number of total particles
 spiral  = int(args.S)               # The switch of spiral
 halo    = int(args.H)               # The switch of halo
+BH      = int(args.B)               # The switch of BH
 
 # Calculated quantities
 m = M/N                     # mass of each particle
@@ -164,7 +167,7 @@ def sigma_z(r):
 # 2) Combine everything together
 def vel(r):
     return np.sqrt(r**2*Omega(r) + G*M_b*r**2/(r**2+c**2)**1.5\
-         + halo*G*M_h*r**2/(r**2+e**2)**1.5)
+         + halo*G*M_h*r**2/(r**2+e**2)**1.5 + BH*G*B/r)
 
 r_d = np.sqrt(np.sum(disk[:,0:2]**2, axis=1))
 
@@ -197,20 +200,22 @@ def sample_velocity(N,v_esc):
             samples.append( (vxs,vys,vzs) )
     return np.array(samples[:N])
         
-vec = (2*G*M_b)**0.5 * (r**2 + c**2)**(-0.25)
+vec = (2*G*(M_b+ B*BH))**0.5 * (r**2 + c**2)**(-0.25)
 v_bulge = sample_velocity(N_b,vec)
 
 # Generate the velocity of the halo particle
 if halo == 1:
-    vec = (2*G*M_h)**0.5 * (r**2 + e**2)**(-0.25)
+    vec = (2*G*(M_h+ B*BH))**0.5 * (r**2 + e**2)**(-0.25)
     v_halo = sample_velocity(N_h,vec)
 
 # Print the result formally
 if halo == 1: N = int(5*N)
+if BH == 1: N += 1
 
 print(N)
 for i in range(N):
     print(m)
+if BH == 1: print(B)
 for i,j,k in disk:
     print(i,j,k)
 for i,j,k in bulge:
@@ -218,6 +223,7 @@ for i,j,k in bulge:
 if halo == 1:
     for i,j,k in halo_r:
         print(i,j,k)
+if BH == 1: print("0 0 0")
 for i,j,k in v_disk:
     print(i,j,k)
 for i,j,k in v_bulge:
@@ -225,3 +231,4 @@ for i,j,k in v_bulge:
 if halo == 1:
     for i,j,k in v_halo:
         print(i,j,k)
+if BH == 1: print("0 0 0")

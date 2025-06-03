@@ -5,7 +5,7 @@ import os
 
 # Parameter
 G = 1           # Newton gravity constant
-m = 1
+
 
 data_dir = "DATA/"
 parser = argparse.ArgumentParser()
@@ -18,6 +18,7 @@ filename = "Initial.dat"
 with open(filename) as f:
     lines = f.readlines()
 N = int(lines[0].strip())
+m = float(lines[1].strip())
 x = np.empty((N_f,N,3))
 v = np.empty((N_f,N,3))
 

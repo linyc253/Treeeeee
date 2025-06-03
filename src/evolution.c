@@ -48,7 +48,7 @@ double Evolution(Particle* P, int npart, double dt_max, double dt1) {
 
     // Calculate force and dt2
     if(METHOD == 1) total_force(P, npart, epsilon);
-    else if(METHOD == 2) total_force_tree(P, npart);
+    else if(METHOD == 2) total_force_tree(P, npart, 0);
     double dt2 = compute_dt(P, npart, dt_max, eta, epsilon);
 
     // Kick by (dt1 + dt2) / 2    (KDK scheme)
@@ -66,4 +66,24 @@ double Evolution(Particle* P, int npart, double dt_max, double dt1) {
     }
 
     return dt2;
+}
+
+void Energy(Particle* P, int npart){
+    int METHOD = get_int("BasicSetting.METHOD", 2);
+    double V = 0.0, K = 0.0;
+    double epsilon = get_double("BasicSetting.EPSILON", 1e-4);
+
+    // brute force not implemented yet...
+
+    if(METHOD == 1) V = total_potential(P, npart, epsilon); 
+    else if(METHOD == 2) V = total_force_tree(P, npart, 1) / 2.0; 
+
+    for (int i = 0; i < npart; i++) {
+        for (int j = 0; j < DIM; j++) {
+            K += P[i].m * P[i].v[j] * P[i].v[j] / 2.0;
+        }
+    }
+
+    Write_Energy_File(K, V, K + V, "Energy.dat");
+    return;
 }

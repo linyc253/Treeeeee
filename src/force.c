@@ -31,6 +31,18 @@ void two_particle_force(Particle* a, Particle* b, double* force, double epsilon)
     }
 }
 
+double two_particle_potential(Particle* a, Particle* b, double epsilon){
+    double m_a = a->m;
+    double m_b = b->m;
+    double dx[DIM];
+    double r_sq = 0.0; // r^2
+    for (int i = 0; i < DIM; i++) {
+        dx[i] = a->x[i] - b->x[i];
+        r_sq += dx[i]*dx[i];
+    }
+    return -(m_a * m_b) / pow(r_sq + epsilon*epsilon, 0.5);
+}
+
 // Update p.f[:] by gravitational force (brute force)
 void total_force(Particle* p, int npart, double epsilon){
     // double epsilon = get_double("BasicSetting.epsilon", 1e-10);
@@ -52,5 +64,17 @@ void total_force(Particle* p, int npart, double epsilon){
             }
         }
     }
+}
+
+double total_potential(Particle* p, int npart, double epsilon){
+    // double epsilon = get_double("BasicSetting.epsilon", 1e-10);
+    double V = 0.0;
+
+    for (int i = 0; i < npart; i++) {
+        for (int j = 0; j < i; j++) {
+            V += two_particle_potential(&p[i], &p[j], epsilon);
+        }
+    }
+    return V;
 }
 

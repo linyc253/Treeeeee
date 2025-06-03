@@ -3,7 +3,7 @@ PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
 # PYTHON=python3
 
 ### Generate data (modfy N below)
-$PYTHON Initial_generator.py -N 10000 -S 1 -H 1 > Initial.dat
+$PYTHON Initial_generator.py -N 1000 -S 1 -H 1 > Initial.dat
 
 ### Run Treeeeee setting
     cat > Input_Parameter.ini<<!
@@ -33,7 +33,7 @@ CHUNK = 1
 
 # Plot galaxy animation
 cd Figure
-$PYTHON plot_gas.py -F 800 -H 1 &
+$PYTHON plot_gas.py -F 800 -H &
 $PYTHON plot_gas2.py -F 800 -H 1 &
 cd ..
 wait

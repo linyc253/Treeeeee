@@ -37,4 +37,4 @@ $PYTHON plot_gas.py -N 400
 cd ..
 ffmpeg -framerate 12 -i Figure/%05d.png plummer2.mp4
 # convert Figure/0*.png Plummer2.gif
-#$PYTHON Energy.py -N 201
+# $PYTHON Energy.py -N 200

@@ -247,6 +247,7 @@ if halo == 1:
         print(i,j,k)
     for i,j,k in halo_r2:
         print(i,j,k)
+print(B)
 for i,j,k in v_disk:
     print(i,j,k)
 for i,j,k in v_disk2:
