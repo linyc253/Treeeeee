@@ -1,1 +1,1 @@
-rm DATA/*.dat Figure/*.png Input_Parameter.ini Galaxy.gif *.dat log nohup.out velocity_curve.png galaxy.mp4
+rm DATA/*.dat Figure/*.png Input_Parameter.ini Galaxy.gif *.dat log nohup.out velocity_curve.png galaxy.mp4 *.png

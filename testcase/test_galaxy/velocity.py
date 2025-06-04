@@ -7,24 +7,27 @@ import os
 data_dir = "../DATA/"
 parser = argparse.ArgumentParser()
 parser.add_argument("-H", default=0, help = "Turn on/off the halo. Default:0.")
+parser.add_argument("-R", default=0.8, help = "Bulge, disk mass distribution ratio. Default:0.8")
 args = parser.parse_args()
 halo = int(args.H)
+bd_rate = float(args.R)
+k = int(1+5*bd_rate)
 
 # Load the file
-filename = "Initial.dat"
+filename = "Final.dat"
 with open(filename, 'r') as f:
     lines = f.readlines()
 
 # Parse the number of particles
 num_particles = int(lines[0].strip())
 if halo == 1:
-    num_particles = int(num_particles/5)
+    num_particles = int(num_particles/k)
 
 # Positions:
 if halo == 1:
     r = np.array([
         list(map(float, lines[i].strip().split()))
-        for i in range(1 + 5*num_particles, 1 + 6 * num_particles)
+        for i in range(1 + k*num_particles, 1 + (k+1) * num_particles)
     ])
 else:
     r = np.array([
@@ -40,7 +43,7 @@ r_abs = np.sqrt(r_abs)
 if halo == 1:
     v = np.array([
         list(map(float, lines[i].strip().split()))
-        for i in range(1 + 10 * num_particles, 1 + 11 * num_particles)
+        for i in range(1 + 2*k * num_particles, 1 + (2*k+1) * num_particles)
     ])
 else:
     v = np.array([
