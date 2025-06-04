@@ -35,11 +35,11 @@ CHUNK = 1
 
 # Plot galaxy animation
 $PYTHON plot_energy.py
-$PYTHON velocity.py -H 0
+$PYTHON velocity.py -R 0.9-H 0
 
 cd Figure
-$PYTHON plot_gas.py -F 1000 -R 0.6 -H 0 &
-$PYTHON plot_gas2.py -F 1000 -R 0.6 -H 0 &
+$PYTHON plot_gas.py -F 1000 -R 0.9 -H 0 &
+$PYTHON plot_gas2.py -F 1000 -R 0.9 -H 0 &
 cd ..
 wait
 ffmpeg -framerate 24 -i Figure/%05d.png galaxy.mp4
