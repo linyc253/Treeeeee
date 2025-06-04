@@ -1,14 +1,12 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # Import 3D plotting tools
-import argparse    
+import matplotlib.pyplot as plt 
 
-filename = "DATA/00023"
+filename = "DATA/00050.dat"
 a = 20
 M = 20
 
 # Load the file
-with open(filename+".dat", 'r') as f:
+with open(filename, 'r') as f:
     lines = f.readlines()
 
 # Parse the number of particles
@@ -42,7 +40,7 @@ plt.plot(r, rho, marker='o', linestyle='-', label='Density')
 plt.plot(r, 3 * M / (4 * np.pi * a**3) / (1 + r**2/a**2)**2.5, label='Theoretical')
 plt.xlabel('Distance to Origin')
 plt.ylabel('Density')
-plt.title('Density Distribution ($\epsilon = 1$)')
+plt.title('Density Distribution')
 plt.legend()
 
 
