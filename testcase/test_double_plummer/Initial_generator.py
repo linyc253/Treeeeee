@@ -5,13 +5,16 @@ import argparse
 # Parameters
 G = 1                       # Newton's gravity constant
 a = 20                      # critical radius
-d = 80                      # distance between two plummer
+d = 160                      # distance between two plummer
 M = 1000                      # total mass
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-N", "--N", help = "Number of particles")
+parser.add_argument("-V", help = "The two plummers rotate each other or not", default=0)
+args = parser.parse_args()
 args = parser.parse_args()
 N = int(args.N)             # number of total particles per plummer
+V = int(args.V)
 
 # Calculated quantities
 m = M/N                     # mass of each particle
@@ -67,9 +70,12 @@ for i in range(N):
     v_phi[i] = np.random.uniform(0, 2*np.pi)
     v_theta[i] = np.arccos( np.random.uniform(-1,1) )
     # turn to Cartesian coordinate in velocity space
-    vx1[i] = vx2[i] = vel[i] * np.sin(v_theta[i]) * np.cos(v_phi[i])
-    vy1[i] = vy2[i] = vel[i] * np.sin(v_theta[i]) * np.sin(v_phi[i])
-    vz1[i] = vz2[i] = vel[i] * np.cos(v_theta[i])
+    vx1[i] = vel[i] * np.sin(v_theta[i]) * np.cos(v_phi[i])
+    vy1[i] = vel[i] * np.sin(v_theta[i]) * np.sin(v_phi[i]) + 0.5*np.sqrt(G*M/d)*V
+    vz1[i] = vel[i] * np.cos(v_theta[i])
+    vx2[i] = vx1[i]
+    vy2[i] = vy1[i] - np.sqrt(G*M/d)*V
+    vz2[i] = vz1[i]
 
 # Print the result formally
 print(2*N)

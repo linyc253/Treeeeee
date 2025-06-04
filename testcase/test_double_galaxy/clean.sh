@@ -1,0 +1,1 @@
+rm Figure/*.png Input_Parameter.ini Galaxy2.gif *.dat log nohup.out velocity_curve.png galaxy2.mp4
