@@ -3,7 +3,7 @@ PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
 
 ### Generate data (modfy N below)
 # N is the particle number for "each" plummer
-$PYTHON Initial_generator.py -N 5000 -V 1 > Initial.dat
+$PYTHON Initial_generator.py -N 20000 -V 1 > Initial.dat
 $PYTHON plot.py
 
 ### Run METHOD = 2
@@ -17,24 +17,25 @@ T_TOT = 200                   # total evolution time
 DT = 0.3                    # maximal time interval
 ETA = 5.0                    # parameter that controls the accuracy and stability of the timestep in simulations
 TIME_PER_OUT = 0.5           # Output 00xxx.dat in every STEP_PER_OUT steps
-EPSILON = 5e-4               # softening length used to prevent singularities and numerical instabilities in particle interactions
+EPSILON = 1e-5               # softening length used to prevent singularities and numerical instabilities in particle interactions
 OUTDIR = DATA
 
 [Tree]
 THETA = 0.4                  # Critical angle
 POLES = 1
-NCRIT = 1000
+NCRIT = 1200
 
 [Openmp]
-THREADS = 2
+THREADS = 4
 CHUNK = 1
 !
 ../../bin/treeeeee > log
 
 # Plot plummer animation
+$PYTHON plot_energy.py
 cd Figure
-$PYTHON plot_gas.py -N 400
+$PYTHON plot_gas.py -F 400 &
+$PYTHON plot_gas2.py -F 400 &
 cd ..
+wait
 ffmpeg -framerate 12 -i Figure/%05d.png plummer2.mp4
-# convert Figure/0*.png Plummer2.gif
-# $PYTHON Energy.py -N 200

@@ -46,6 +46,10 @@ for i in range(1, N_f):
         x[i,j,:] = pos[j,:]
         v[i,j,:] = vel[j,:]
 
+# load Energy.dat
+data = np.loadtxt("Energy.dat", skiprows=1)
+
+
 E_k = np.zeros(N_f-1)
 U_g = np.zeros(N_f-1)
 E_t = np.zeros(N_f-1)
@@ -68,23 +72,28 @@ for i in range(1, N_f):
 
 # Create plot
 plt.figure()
-plt.plot(E_t)
+plt.plot(E_t, label="python")
+plt.plot(data[1:1+N_f, 2], label="C")
 plt.title("Total Energy")
 plt.xlabel("Time")
 plt.ylabel("Energy")
-# plt.ylim(bottom=0, top=E_t.max()*1.1)
+plt.legend()
 plt.savefig("Plummer2_Energy_e.png")
 
 plt.figure()
 plt.plot(E_k)
+plt.plot(data[1:1+N_f, 0], label="C")
 plt.title("Kinetic Energy")
 plt.xlabel("Time")
 plt.ylabel("Kinetic")
+plt.legend()
 plt.savefig("Plummer2_Kinetic_e.png")
 
 plt.figure()
 plt.plot(U_g)
+plt.plot(data[1:1+N_f, 1], label="C")
 plt.title("Potential Energy")
 plt.xlabel("Time")
 plt.ylabel("Potential")
+plt.legend()
 plt.savefig("Plummer2_Potential_e.png")
