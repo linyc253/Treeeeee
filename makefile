@@ -8,6 +8,7 @@ CFLAGS = -Wall -O2
 LD_LIBS = -lm
 #CFLAGS += -DDEBUG
 CFLAGS += -DOMP -fopenmp
+#CFLAGS += -DSTB # Serial Tree Build
 
 
 ifdef CUDA_DIR
