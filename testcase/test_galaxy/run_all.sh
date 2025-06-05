@@ -5,7 +5,7 @@ PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
 ### Generate data ( for H=1, N_tot = N*(5R+1) )
 # The current parameter is for "spiral galaxy". The non-spiral galaxy has "-S 0 -R 0.8 -H 0".
 $PYTHON Initial_generator.py -N 200000 -S 0.3 -R 0.9 -H 0 > Initial.dat
-$PYTHON plot.py
+$PYTHON plot.py -R 0.9
 
 ### Run Treeeeee setting
     cat > Input_Parameter.ini<<!
@@ -43,4 +43,3 @@ $PYTHON plot_gas2.py -F 1000 -R 0.9 -H 0 &
 cd ..
 wait
 ffmpeg -framerate 24 -i Figure/%05d.png galaxy.mp4
-#convert Figure/0*.png Galaxy.gif

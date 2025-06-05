@@ -2,8 +2,9 @@
 PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
 # PYTHON=python3
 
-### Generate data (modfy N below, this is only for single galaxy without halo)
-$PYTHON Initial_generator.py -N 7500 -S 0 -H 0 > Initial.dat
+### Generate data ( for H=1, N_tot = N*(5R+1) )
+$PYTHON Initial_generator.py -N 200000 -S 0.3 -R 0.9 -H 0 > Initial.dat
+$PYTHON plot.py -R 0.9
 
 ### Run Treeeeee setting
     cat > Input_Parameter.ini<<!
@@ -32,11 +33,11 @@ CHUNK = 1
 ../../bin/treeeeee > log
 
 # Plot galaxy animation
+$PYTHON plot_energy.py
+
 cd Figure
-$PYTHON plot_gas.py -F 1000 -H 0 &
-$PYTHON plot_gas2.py -F 1000 -H 0 &
+$PYTHON plot_gas.py -F 1000 -R 0.9 -H 0 &
+$PYTHON plot_gas2.py -F 1000 -R 0.9 -H 0 &
 cd ..
 wait
-ffmpeg -framerate 12 -i Figure/%05d.png galaxy2.mp4
-#convert Figure/0*.png Galaxy.gif
-#$PYTHON velocity.py -H 0
+ffmpeg -framerate 24 -i Figure/%05d.png galaxy2.mp4
