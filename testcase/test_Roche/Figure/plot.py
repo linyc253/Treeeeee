@@ -7,9 +7,9 @@ import os
 # Parameter
 data_dir = "../DATA/"
 parser = argparse.ArgumentParser()
-parser.add_argument("-N")
+parser.add_argument("-F")
 args = parser.parse_args()
-N_f = int(args.N)
+N_f = int(args.F)
 
 # Load the file
 for i in range(1, 1+N_f):
@@ -20,12 +20,12 @@ for i in range(1, 1+N_f):
         lines = f.readlines()
 
     # Parse the number of particles
-    num_particles = int(lines[0].strip())
+    Npt = int(lines[0].strip())
 
     # Positions:
     positions = np.array([
         list(map(float, lines[i].strip().split()))
-        for i in range(1 + num_particles, 1 + 2 * num_particles)
+        for i in range(1 + Npt, 1 + 2 * Npt)
     ])
 
     # Create a new figure
@@ -42,21 +42,31 @@ for i in range(1, 1+N_f):
 
     # Scatter plot for the positions
     ax.scatter(
-        positions[:, 0],  # x-coordinates
-        positions[:, 1],  # y-coordinates
-        positions[:, 2],  # z-coordinates
+        positions[0:int(Npt/1.02), 0],  # x-coordinates
+        positions[0:int(Npt/1.02), 1],  # y-coordinates
+        positions[0:int(Npt/1.02), 2],  # z-coordinates
         s=0.1,            # marker size (small for many particles)
         alpha=0.7,        # transparency for better visibility
-        c=np.zeros(num_particles),
+        c=np.zeros(int(Npt/1.02)),
         cmap='YlOrRd',
         vmin = -0.2, vmax=1.0
     )
+    ax.scatter(
+        positions[int(Npt/1.02):Npt, 0],  # x-coordinates
+        positions[int(Npt/1.02):Npt, 1],  # y-coordinates
+        positions[int(Npt/1.02):Npt, 2],  # z-coordinates
+        s=0.1,            # marker size (small for many particles)
+        alpha=0.7,        # transparency for better visibility
+        c=np.zeros(int(Npt*0.02/1.02)),
+        cmap='YlOrRd',
+        vmin = -1.0, vmax=0.2
+    )
 
     # Fix the axes
-    ax.axes.set_xlim3d(left=-250, right=250)
-    ax.axes.set_ylim3d(bottom=-100, top=100)
-    ax.axes.set_zlim3d(bottom=-100, top=100)
-    ax.set_box_aspect([5,2,2])
+    ax.axes.set_xlim3d(left=-400, right=400)
+    ax.axes.set_ylim3d(bottom=-400, top=400)
+    ax.axes.set_zlim3d(bottom=-400, top=400)
+    ax.set_box_aspect([1,1,1])
     ax.set_axis_off()
 
     # Save figure
