@@ -696,8 +696,8 @@ double total_force_tree(Particle* P, int npart, int compute_energy){
     gettimeofday(&t0, 0);
     #endif
     
-    int OMP_NUM_THREADS = get_int("Openmp.THREADS", 1);
     #if defined OMP && !defined STB
+    int OMP_NUM_THREADS = get_int("Openmp.THREADS", 1);
     omp_set_num_threads(OMP_NUM_THREADS);
     Tree T_local[OMP_NUM_THREADS];
     NodePool* Pool[OMP_NUM_THREADS];
@@ -754,9 +754,11 @@ double total_force_tree(Particle* P, int npart, int compute_energy){
         printf("BUG: number of particle in tree (%d) mismatch with npart (%d)\n", T.root->npart, npart);
         exit(EXIT_FAILURE);
     }
+
+    int poles = get_int("Tree.POLES", 1);
     Compute_m_and_x(T.root, P, 0);
-    if (pole == 2){
-        compute_quadrupole(T_local[tid].root, P, 0);
+    if (poles == 2){
+        compute_quadrupole(T.root, P, 0);
     }
     #endif
     

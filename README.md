@@ -8,7 +8,15 @@ Then compile the code by
 cd Treeeeee
 make
 ```
-And execute by
+alternatively, use cmake
+```
+cmake -S . -B build && cmake --build build
+```
+additional cmake options can be turned on, "-DOMP" for OpenMP, "-DCUDA" for cuda support. For example, 
+```
+cmake -DOMP=ON -DCUDA=ON -S . -B build && cmake --build build
+```
+Once compiled you can execute by
 ```
 cd testcase/test_random
 python generate.py -N 10000 > Initial.dat
