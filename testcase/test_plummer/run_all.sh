@@ -14,8 +14,8 @@ PARTICLE_FILE = Initial.dat  # filename of particle file (default: Initial.dat)
 T_TOT = 100                  # total evolution time
 DT = 0.2                     # maximal time interval
 ETA = 0.05                   # parameter that controls the accuracy and stability of the timestep in simulations
-TIME_PER_OUT = 1.0           # Output 00xxx.dat in every STEP_PER_OUT steps
-EPSILON = 0.01               # softening length used to prevent singularities and numerical instabilities in particle interactions
+TIME_PER_OUT = 0.5           # Output 00xxx.dat in every STEP_PER_OUT steps
+EPSILON = 5e-2            # softening length used to prevent singularities and numerical instabilities in particle interactions
 OUTDIR = DATA
 
 [Tree]
@@ -32,6 +32,6 @@ CHUNK = 1
 # Plot plummer animation
 $PYTHON plot_energy.py
 cd Figure
-$PYTHON plot_gas.py -F 500
+$PYTHON plot_gas.py -F 200
 cd ..
-ffmpeg -framerate 24 -i Figure/%05d.png plummer.mp4
+ffmpeg -framerate 12 -i Figure/%05d.png plummer.mp4
