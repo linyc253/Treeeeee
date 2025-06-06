@@ -1,0 +1,1 @@
+rm *.png Input_Parameter.ini *.dat log;

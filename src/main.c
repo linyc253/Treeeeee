@@ -26,7 +26,20 @@ int main(){
 
     // Read Particle file
     Particle* P;
-    int npart = Read_Particle_File(&P);
+    int RESTART = get_int("BasicSetting.RESTART", 0);
+    int npart;
+    if(RESTART == 0){
+        const char* PARTICLE_FILE = get_string("BasicSetting.PARTICLE_FILE", "Initial.dat");
+        npart = Read_Particle_File(&P, PARTICLE_FILE);
+        Initialize_Energy_File("Energy.dat");
+    }
+    else{
+        char PARTICLE_FILE[32];
+        sprintf(PARTICLE_FILE, "%s/%05d.dat", OUTDIR, RESTART);
+        printf("===== Restart from %s =====\n", PARTICLE_FILE);
+        npart = Read_Particle_File(&P, PARTICLE_FILE);
+    }
+    
 
     // Main Calculation
     double T_TOT = get_double("BasicSetting.T_TOT", 0.0);
@@ -60,9 +73,15 @@ int main(){
             ((STEP_PER_OUT != -1) && (step % STEP_PER_OUT == 0)) ) {
             time_step++;
             char filename[32];
-            sprintf(filename, "%s/%05d.dat", OUTDIR, time_step);  
+            sprintf(filename, "%s/%05d.dat", OUTDIR, time_step + RESTART);  
             Write_Particle_File(P, npart, filename);
             printf("Data written to %s (t = %.3f)\n", filename, t);
+
+            gettimeofday(&t0, 0);
+            Energy(P, npart);
+            gettimeofday(&t1, 0);
+
+            printf("Perform energy calculation  timeElapsed: %lu ms\n", (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_usec - t0.tv_usec) / 1000);
         }
         
 

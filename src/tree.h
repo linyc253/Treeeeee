@@ -4,9 +4,10 @@
 #include "particle.h"
 
 typedef struct node{
-    struct node** children; // Array to be allocate later
+    struct node* children[8]; // Array to be allocate later
     struct node* parent;
     int npart;
+    long long cost;
     int i;
     double D; // cell size
 
@@ -36,6 +37,6 @@ typedef struct{
     float x[3];
 } Coord3;
 
-void total_force_tree(Particle* P, int npart);
+double total_force_tree(Particle* P, int npart, int compute_energy);
 
 #endif

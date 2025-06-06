@@ -5,3 +5,4 @@ build/*
 *.png
 *.gif
 .vscode
+*.mp4

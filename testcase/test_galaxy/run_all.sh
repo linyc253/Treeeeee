@@ -1,0 +1,42 @@
+### You need to modify 'python' to your default python executable
+PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
+# PYTHON=python3
+
+### Generate data (modfy N below)
+$PYTHON Initial_generator.py -N 1000 -S 1 -H 1 > Initial.dat
+
+### Run Treeeeee setting
+    cat > Input_Parameter.ini<<!
+[BasicSetting]
+DIM = 3                      # Dimension of the system (default: 3)
+METHOD = 2                   # Method 1:brute_force 
+                             #        2:tree_algo (default)
+PARTICLE_FILE = Initial.dat  # filename of particle file (default: Initial.dat)
+T_TOT = 3200                 # total evolution time
+DT = 1.0                     # maximal time interval
+ETA = 20.0                   # parameter that controls the accuracy and stability of the timestep in simulations
+TIME_PER_OUT = 4             # Output 00xxx.dat in every STEP_PER_OUT steps
+EPSILON = 1e-3               # softening length used to prevent singularities and numerical instabilities in particle interactions
+OUTDIR = DATA                # The output file should be put in this folder
+# RESTART = 800                # Continue the calculation at this step
+
+[Tree]
+THETA = 0.4                  # Critical angle
+POLES = 1
+NCRIT = 1200
+
+[Openmp]
+THREADS = 2
+CHUNK = 1
+!
+../../bin/treeeeee > log
+
+# Plot galaxy animation
+cd Figure
+$PYTHON plot_gas.py -F 800 -H &
+$PYTHON plot_gas2.py -F 800 -H 1 &
+cd ..
+wait
+ffmpeg -framerate 12 -i Figure/%05d.png galaxy.mp4
+#convert Figure/0*.png Galaxy.gif
+$PYTHON velocity.py -H 1
