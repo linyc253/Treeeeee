@@ -33,7 +33,7 @@ ETA = 10.0                   # parameter that controls the accuracy and stabilit
 EPSILON = 1e-3               # softening length used to prevent singularities and numerical instabilities in particle interactions
 TIME_PER_OUT = 0.5           # Output 00xxx.dat in every \Delta t = TIME_PER_OUT
 OUTDIR = data                # where the output data stored
-RESTART = 12                 # restart from 00012.dat
+#RESTART = 12                 # restart from 00012.dat
 
 [Tree]
 THETA = 0.5                  # Critical angle
@@ -42,8 +42,11 @@ POLES = 1                    # 1: dipole (centre of mass)
 NCRIT = 1000                 # The max number of particles in a group (for constructing interaction list)
 
 [Openmp]
-THREADS = 2                  # Number of threads
+THREADS = 4                  # Number of threads
 CHUNK = 1                    # The chunk size in dynamic scheduling
+
+[GPU]
+threadsPerBlock = 128
 ```
 # Particle file format
 The particle file (filename should be specified in `Input_Parameter.ini`) must follow the format below
