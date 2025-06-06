@@ -11,13 +11,14 @@ make
 And execute by
 ```
 cd testcase/test_random
-python generate.py -N 10000 > Initial.dat
+python Initial_generator.py -N 10000 > Initial.dat
 ../../bin/treeeeee
 ```
 The calculation result can be visualized by the python script
 ```
+cd Figure
 python plot_gas.py
-convert data/*.png Random.gif
+convert ../data/*.png Random.gif
 ```
 # Parameter file format
 The parameter file should be named as `Input_Parameter.ini`. Use `#` for comment.
