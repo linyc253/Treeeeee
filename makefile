@@ -1,7 +1,7 @@
 CC = gcc
 
 # comment this out if you don't use cuda
-CUDA_DIR = /home/opt/nvidia/hpc_sdk/Linux_x86_64/23.1/cuda
+CUDA_DIR = /usr/local/cuda-12.8
 
 
 CFLAGS = -Wall -O2
