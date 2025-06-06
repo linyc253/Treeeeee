@@ -1,3 +1,0 @@
-/home/tpyang/computational-astrophysics/final-project/Treeeeee/CMakeFiles/treeeeee.dir
-/home/tpyang/computational-astrophysics/final-project/Treeeeee/CMakeFiles/edit_cache.dir
-/home/tpyang/computational-astrophysics/final-project/Treeeeee/CMakeFiles/rebuild_cache.dir

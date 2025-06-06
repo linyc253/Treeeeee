@@ -10,10 +10,12 @@ make
 ```
 alternatively, use cmake
 ```
+cd Treeeeee
 cmake -S . -B build && cmake --build build
 ```
 additional cmake options can be turned on, "-DOMP" for OpenMP, "-DCUDA" for cuda support. For example, 
 ```
+cd Treeeeee
 cmake -DOMP=ON -DCUDA=ON -S . -B build && cmake --build build
 ```
 Once compiled you can execute by
