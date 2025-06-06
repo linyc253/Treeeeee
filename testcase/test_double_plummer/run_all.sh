@@ -18,7 +18,7 @@ DT = 0.3                     # maximal time interval
 ETA = 5.0                    # parameter that controls the accuracy and stability of the timestep in simulations
 TIME_PER_OUT = 0.5           # Output 00xxx.dat in every STEP_PER_OUT steps
 EPSILON = 1e-5               # softening length used to prevent singularities and numerical instabilities in particle interactions
-OUTDIR = DATA1
+OUTDIR = DATA
 
 [Tree]
 THETA = 0.4                  # Critical angle

@@ -1,1 +1,1 @@
-rm DATA/*.dat Figure/*.png Input_Parameter.ini log Roche.mp4 *.dat *.png
+rm DATA/*.dat Figure/*.png Input_Parameter.ini log Roche.mp4 *.dat *.png nohup.out

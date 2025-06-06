@@ -4,7 +4,7 @@ import argparse
 
 # Parameters
 G = 1                       # Newton's gravity constant
-b = 500                      # collision parameter
+b = 500                     # collision parameter
 M = 10000                   # total mass of the primary
 k = 1                       # initial distance
 

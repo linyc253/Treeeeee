@@ -1,1 +1,1 @@
-rm -r data Random.gif Initial.dat
+rm *.dat *.png DATA/*.dat Figure/*.png Input_Parameter.ini log random.mp4

@@ -2,7 +2,7 @@
 PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
 
 ### Generate data (modfy N below)
-$PYTHON Initial_generator.py -N 10000 > Initial.dat
+$PYTHON Initial_generator.py -N 3000 > Initial.dat
 
 ### Run METHOD = 2
     cat > Input_Parameter.ini<<!
@@ -15,7 +15,7 @@ T_TOT = 100                  # total evolution time
 DT = 0.2                     # maximal time interval
 ETA = 0.05                   # parameter that controls the accuracy and stability of the timestep in simulations
 TIME_PER_OUT = 0.5           # Output 00xxx.dat in every STEP_PER_OUT steps
-EPSILON = 5e-2            # softening length used to prevent singularities and numerical instabilities in particle interactions
+EPSILON = 5e-2               # softening length used to prevent singularities and numerical instabilities in particle interactions
 OUTDIR = DATA
 
 [Tree]

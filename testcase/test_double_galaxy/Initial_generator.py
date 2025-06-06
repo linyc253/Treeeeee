@@ -8,6 +8,8 @@ a = 250                     # disk scale radius
 b = 35                      # disk scale height
 c = 50                      # bulge scale radius
 arm = 2                     # number of spiral arms
+distance = 3000             # distance between the two galaxy
+angle    = 0                # the incline angle of two galaxy (rad)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-N", help = "Number of particles")
