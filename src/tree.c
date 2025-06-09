@@ -23,6 +23,86 @@
 #include <sys/time.h>
 #endif
 
+// quadrupole tensor to pseudoparticle positions
+void quadtensor_2_p2x(double quad_tensor[3][3], Node* node){
+    // compute eigenvalue of quadrupole tensor
+    double eigval[3];
+    double eigvec[3][3];
+    dsyevh3(quad_tensor, eigvec, eigval);
+
+    // sort in eigenvalue
+    for (int i = 0; i < 3; i++){
+        if (i == 2){
+            i = 0;
+            if (eigval[i] < eigval[i + 1]){
+                double temp_val = eigval[i];
+                eigval[i] = eigval[i + 1];
+                eigval[i + 1] = temp_val;
+
+                double temp_vec[3] = {eigvec[0][i], eigvec[1][i], eigvec[2][i]};
+                eigvec[0][i] = eigvec[0][i + 1];
+                eigvec[1][i] = eigvec[1][i + 1];
+                eigvec[2][i] = eigvec[2][i + 1];
+                eigvec[0][i + 1] = temp_vec[0];
+                eigvec[1][i + 1] = temp_vec[1];
+                eigvec[2][i + 1] = temp_vec[2];
+            }
+            break;
+        }
+        if (eigval[i] < eigval[i + 1]){
+            double temp_val = eigval[i];
+            eigval[i] = eigval[i + 1];
+            eigval[i + 1] = temp_val;
+
+            double temp_vec[3] = {eigvec[0][i], eigvec[1][i], eigvec[2][i]};
+            eigvec[0][i] = eigvec[0][i + 1];
+            eigvec[1][i] = eigvec[1][i + 1];
+            eigvec[2][i] = eigvec[2][i + 1];
+            eigvec[0][i + 1] = temp_vec[0];
+            eigvec[1][i + 1] = temp_vec[1];
+            eigvec[2][i + 1] = temp_vec[2];
+        }
+    }
+    
+    // alpha, beta, and check for imaginary number
+    double alpha = 2 * eigval[0] + eigval[1];
+    if (fabs(alpha) < 1e-10){
+        alpha = 0;
+    } 
+    else{
+        alpha = sqrt(alpha / node->m);
+    }
+    double beta = eigval[0] + 2 * eigval[1];
+    if (fabs(beta) < 1e-10){
+        beta = 0;
+    } 
+    else{
+        beta = sqrt(beta / (3 * node->m));
+    }
+
+    double temp_p2_x[3][3];
+
+    temp_p2_x[0][0] = 0;
+    temp_p2_x[0][1] = 2 * beta;
+    temp_p2_x[0][2] = 0;
+    temp_p2_x[1][0] = alpha;
+    temp_p2_x[1][1] = -beta;
+    temp_p2_x[1][2] = 0;
+    temp_p2_x[2][0] = -alpha;
+    temp_p2_x[2][1] = -beta;
+    temp_p2_x[2][2] = 0;
+
+    // transform back
+    for (int pp = 0; pp < 3; pp++) {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                node->p2_x[pp][i] += eigvec[i][j] * temp_p2_x[pp][j];
+            }
+            node->p2_x[pp][i] += node->x[i];
+        }
+    }
+}
+
 Tree Initialize_Tree(Particle* P, int npart, NodePool* Pool){
     Tree T;
     T.root = alloc_node(Pool);
@@ -110,8 +190,6 @@ void Tree_Insert(Node* node, Node* parent, int index, Particle* P, int i, NodePo
     node->npart++;
 }
 
-
-
 Node* Tree_Merge(Node* node1, Node* node2, Particle* P, NodePool* Pool){
     int poles = get_int("Tree.POLES", 1);
     if(node1 == NULL || node1->npart == 0){ // node1 is empty
@@ -194,81 +272,8 @@ Node* Tree_Merge(Node* node1, Node* node2, Particle* P, NodePool* Pool){
                 quad_tensor[i][i] -= singlet;
             }
         }
-        double eigval[3];
-        double eigvec[3][3];
-        dsyevh3(quad_tensor, eigvec, eigval);
-
-        // sort in eigenvalue
-        for (int i = 0; i < 3; i++){
-            if (i == 2){
-                i = 0;
-                if (eigval[i] < eigval[i + 1]){
-                    double temp_val = eigval[i];
-                    eigval[i] = eigval[i + 1];
-                    eigval[i + 1] = temp_val;
-
-                    double temp_vec[3] = {eigvec[0][i], eigvec[1][i], eigvec[2][i]};
-                    eigvec[0][i] = eigvec[0][i + 1];
-                    eigvec[1][i] = eigvec[1][i + 1];
-                    eigvec[2][i] = eigvec[2][i + 1];
-                    eigvec[0][i + 1] = temp_vec[0];
-                    eigvec[1][i + 1] = temp_vec[1];
-                    eigvec[2][i + 1] = temp_vec[2];
-                }
-                break;
-            }
-            if (eigval[i] < eigval[i + 1]){
-                double temp_val = eigval[i];
-                eigval[i] = eigval[i + 1];
-                eigval[i + 1] = temp_val;
-
-                double temp_vec[3] = {eigvec[0][i], eigvec[1][i], eigvec[2][i]};
-                eigvec[0][i] = eigvec[0][i + 1];
-                eigvec[1][i] = eigvec[1][i + 1];
-                eigvec[2][i] = eigvec[2][i + 1];
-                eigvec[0][i + 1] = temp_vec[0];
-                eigvec[1][i + 1] = temp_vec[1];
-                eigvec[2][i + 1] = temp_vec[2];
-            }
-        }
         
-        // alpha, beta, and check for imaginary number
-        double alpha = 2 * eigval[0] + eigval[1];
-        if (fabs(alpha) < 1e-10){
-            alpha = 0;
-        } 
-        else{
-            alpha = sqrt(alpha / node1->m);
-        }
-        double beta = eigval[0] + 2 * eigval[1];
-        if (fabs(beta) < 1e-10){
-            beta = 0;
-        } 
-        else{
-            beta = sqrt(beta / (3 * node1->m));
-        }
-
-        double temp_p2_x[3][3];
-
-        temp_p2_x[0][0] = 0;
-        temp_p2_x[0][1] = 2 * beta;
-        temp_p2_x[0][2] = 0;
-        temp_p2_x[1][0] = alpha;
-        temp_p2_x[1][1] = -beta;
-        temp_p2_x[1][2] = 0;
-        temp_p2_x[2][0] = -alpha;
-        temp_p2_x[2][1] = -beta;
-        temp_p2_x[2][2] = 0;
-
-        // transform back
-        for (int pp = 0; pp < 3; pp++) {
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    node1->p2_x[pp][i] += eigvec[i][j] * temp_p2_x[pp][j];
-                }
-                node1->p2_x[pp][i] += node1->x[i];
-            }
-        }
+        quadtensor_2_p2x(quad_tensor, node1);
     }
 
     return node1;
@@ -290,8 +295,6 @@ Tree Tree_Build(Particle* P, int npart, int tid, NodePool* Pool){
     }
     return T;
 }
-
-
 
 // function ( mass, cm ) = Compute_Mass(n)    
 //        ... Compute the mass and center of mass (cm) of 
@@ -401,82 +404,8 @@ int compute_quadrupole(Node* node, Particle* particles, int depth){
                 }
             }
         }
-        // compute eigenvalue of quadrupole tensor
-        double eigval[3];
-        double eigvec[3][3];
-        dsyevh3(quad_tensor, eigvec, eigval);
 
-        // sort in eigenvalue
-        for (int i = 0; i < 3; i++){
-            if (i == 2){
-                i = 0;
-                if (eigval[i] < eigval[i + 1]){
-                    double temp_val = eigval[i];
-                    eigval[i] = eigval[i + 1];
-                    eigval[i + 1] = temp_val;
-
-                    double temp_vec[3] = {eigvec[0][i], eigvec[1][i], eigvec[2][i]};
-                    eigvec[0][i] = eigvec[0][i + 1];
-                    eigvec[1][i] = eigvec[1][i + 1];
-                    eigvec[2][i] = eigvec[2][i + 1];
-                    eigvec[0][i + 1] = temp_vec[0];
-                    eigvec[1][i + 1] = temp_vec[1];
-                    eigvec[2][i + 1] = temp_vec[2];
-                }
-                break;
-            }
-            if (eigval[i] < eigval[i + 1]){
-                double temp_val = eigval[i];
-                eigval[i] = eigval[i + 1];
-                eigval[i + 1] = temp_val;
-
-                double temp_vec[3] = {eigvec[0][i], eigvec[1][i], eigvec[2][i]};
-                eigvec[0][i] = eigvec[0][i + 1];
-                eigvec[1][i] = eigvec[1][i + 1];
-                eigvec[2][i] = eigvec[2][i + 1];
-                eigvec[0][i + 1] = temp_vec[0];
-                eigvec[1][i + 1] = temp_vec[1];
-                eigvec[2][i + 1] = temp_vec[2];
-            }
-        }
-        
-        // alpha, beta, and check for imaginary number
-        double alpha = 2 * eigval[0] + eigval[1];
-        if (fabs(alpha) < 1e-10){
-            alpha = 0;
-        } 
-        else{
-            alpha = sqrt(alpha / node->m);
-        }
-        double beta = eigval[0] + 2 * eigval[1];
-        if (fabs(beta) < 1e-10){
-            beta = 0;
-        } 
-        else{
-            beta = sqrt(beta / (3 * node->m));
-        }
-
-        double temp_p2_x[3][3];
-
-        temp_p2_x[0][0] = 0;
-        temp_p2_x[0][1] = 2 * beta;
-        temp_p2_x[0][2] = 0;
-        temp_p2_x[1][0] = alpha;
-        temp_p2_x[1][1] = -beta;
-        temp_p2_x[1][2] = 0;
-        temp_p2_x[2][0] = -alpha;
-        temp_p2_x[2][1] = -beta;
-        temp_p2_x[2][2] = 0;
-
-        // transform back
-        for (int pp = 0; pp < 3; pp++) {
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    node->p2_x[pp][i] += eigvec[i][j] * temp_p2_x[pp][j];
-                }
-                node->p2_x[pp][i] += node->x[i];
-            }
-        }
+        quadtensor_2_p2x(quad_tensor, node);
     }
     return 0;
 }
@@ -678,6 +607,7 @@ void Zero_Force(Particle* P, int npart){
     return;
 }
 
+// clean up
 void Free_Tree(Node* node){
     if(node == NULL) return;
     if(node->children != NULL){
