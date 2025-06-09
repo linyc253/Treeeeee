@@ -2,27 +2,27 @@
 First, clone by the following command
 ```
 git clone https://github.com/linyc253/Treeeeee.git
-```
-Then compile the code by
-```
 cd Treeeeee
+```
+To compile the code, modify the relevant library directories and flags and execute make.
+```
 make
 ```
-alternatively, use CMake
+Alternatively, use CMake by executing the following
 ```
-cd Treeeeee
 cmake -S . -B build && cmake --build build
 ```
-To clean all binaries and CMake files:
+Additional cmake options can be turned on, "-DOMP" for OpenMP, "-DCUDA" for cuda support, and "-DDEBUG" for some additional timing information. For example, 
+```
+cmake -DOMP=ON -DCUDA=ON -S . -B build && cmake --build build
+```
+To clean all binaries and CMake files execute
 ```
 cmake -build build --target clean-all
 ```
-additional cmake options can be turned on, "-DOMP" for OpenMP, "-DCUDA" for cuda support, and "-DDEBUG" for some additional timing information. For example, 
-```
-cd Treeeeee
-cmake -DOMP=ON -DCUDA=ON -S . -B build && cmake --build build
-```
-Once compiled you can execute by
+
+# How to Run
+Once compiled you can test by executing
 ```
 cd testcase/test_random
 python generate.py -N 10000 > Initial.dat
