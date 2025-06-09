@@ -13,7 +13,7 @@ alternatively, use cmake
 cd Treeeeee
 cmake -S . -B build && cmake --build build
 ```
-To clean all binaryies and CMake files:
+To clean all binaries and CMake files:
 ```
 cmake -build build --target clean-all
 ```
