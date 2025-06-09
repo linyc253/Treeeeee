@@ -33,12 +33,14 @@ for i in range(1,1+N_f):
 
     # Positions:
     if halo == 1:
+        if BH == 1:
+            start = 2 + 5 * num_particles
+        else:
+            start = 1 + 5 * num_particles
+
         positions = np.array([
             list(map(float, lines[i].strip().split()))
-            if BH == 1:
-                for i in range(2 + 5*num_particles, 2 + 6 * num_particles)
-            else:
-                for i in range(1 + 5*num_particles, 1 + 6 * num_particles)
+            for i in range(start, start + num_particles)
         ])
     else:
         positions = np.array([

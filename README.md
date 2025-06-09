@@ -8,7 +8,7 @@ Then compile the code by
 cd Treeeeee
 make
 ```
-alternatively, use cmake
+alternatively, use CMake
 ```
 cd Treeeeee
 cmake -S . -B build && cmake --build build
