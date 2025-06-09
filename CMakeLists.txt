@@ -28,7 +28,7 @@ add_executable(treeeeee ${SOURCES})
 
 option(DEBUG "Enable debugging mode" OFF)
 if(DEBUG)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG -fsanitize=address -g")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG")
 endif()
 
 # Enable OpenMP
