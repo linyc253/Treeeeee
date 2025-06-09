@@ -13,7 +13,7 @@ alternatively, use cmake
 cd Treeeeee
 cmake -S . -B build && cmake --build build
 ```
-additional cmake options can be turned on, "-DOMP" for OpenMP, "-DCUDA" for cuda support, and "-DDEBUG" for some addistional timing information. For example, 
+additional cmake options can be turned on, "-DOMP" for OpenMP, "-DCUDA" for cuda support, and "-DDEBUG" for some additional timing information. For example, 
 ```
 cd Treeeeee
 cmake -DOMP=ON -DCUDA=ON -S . -B build && cmake --build build
