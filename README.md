@@ -13,6 +13,10 @@ alternatively, use cmake
 cd Treeeeee
 cmake -S . -B build && cmake --build build
 ```
+To clean all binaryies and CMake files:
+```
+cmake -build build --target clean-all
+```
 additional cmake options can be turned on, "-DOMP" for OpenMP, "-DCUDA" for cuda support, and "-DDEBUG" for some additional timing information. For example, 
 ```
 cd Treeeeee

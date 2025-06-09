@@ -57,3 +57,8 @@ endif()
 # Output directories
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/build)
 
+add_custom_target(clean-all
+    COMMAND ${CMAKE_BUILD_TOOL} clean
+    COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_BINARY_DIR}/*
+    COMMENT "Cleaning all build files"
+)
