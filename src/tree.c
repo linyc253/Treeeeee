@@ -95,6 +95,7 @@ void quadtensor_2_p2x(double quad_tensor[3][3], Node* node){
     // transform back
     for (int pp = 0; pp < 3; pp++) {
         for (int i = 0; i < 3; i++) {
+            node->p2_x[pp][i] = 0;
             for (int j = 0; j < 3; j++) {
                 node->p2_x[pp][i] += eigvec[i][j] * temp_p2_x[pp][j];
             }
@@ -384,7 +385,6 @@ int compute_quadrupole(Node* node, Particle* particles, int depth){
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 3; j++) {
                 quad_tensor[i][j] = 0;
-                node->p2_x[i][j] = 0;
             }
         }
         // sum over all particles inside
