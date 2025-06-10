@@ -37,6 +37,13 @@ typedef struct{
     float x[3];
 } Coord3;
 
+// Interaction list
+typedef struct{
+    Coord4* xyzm;
+    int* particle_indices;
+    int n;
+} InteractionList;
+
 double total_force_tree(Particle* P, int npart, int compute_energy);
 
 #endif

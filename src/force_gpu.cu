@@ -74,7 +74,9 @@ __global__ void Particle_Cell_Kernel_Potential(float4* P, int ng, float4* C, int
     atomicAdd(&F[ip].x, f.x);
 }
 
-extern "C" double Particle_Cell_Force_gpu(Coord4* P, int ng, Coord4* C, int nl, Coord3* F, double epsilon, int threadsPerBlock, int compute_energy){
+extern "C" double Particle_Cell_Force_gpu(InteractionList particle_list, InteractionList cell_list, Coord3* force_xyz, double epsilon, int threadsPerBlock, int compute_energy){
+    int ng = particle_list.n;
+    int nl = cell_list.n;
     float4 *d_P, *d_C;
     float3 *d_F;
     double V = 0.0;
@@ -85,8 +87,8 @@ extern "C" double Particle_Cell_Force_gpu(Coord4* P, int ng, Coord4* C, int nl, 
     cudaMalloc((void**)&d_F, sizeof(float3) * ng);
 
     // Transfer data from host to device memory
-    cudaMemcpy(d_P, P, sizeof(float4) * ng, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_C, C, sizeof(float4) * nl, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_P, particle_list.xyzm, sizeof(float4) * ng, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_C, cell_list.xyzm, sizeof(float4) * nl, cudaMemcpyHostToDevice);
 
     // Initialize d_F as 0.0 (https://forums.developer.nvidia.com/t/can-i-set-a-floats-to-zero-with-cudamemset/153706)
     cudaMemset(d_F, 0, sizeof(float3) * ng);
@@ -107,11 +109,11 @@ extern "C" double Particle_Cell_Force_gpu(Coord4* P, int ng, Coord4* C, int nl, 
     }
 
     // Transfer data back to host memory
-    cudaMemcpy(F, d_F, sizeof(float3) * ng, cudaMemcpyDeviceToHost);
+    cudaMemcpy(force_xyz, d_F, sizeof(float3) * ng, cudaMemcpyDeviceToHost);
 
     if(compute_energy){
         for(int i = 0; i < ng; i++){
-            V += (double)F[i].x[0];
+            V += (double)force_xyz[i].x[0];
         }
     }
 

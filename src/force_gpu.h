@@ -3,6 +3,6 @@
 
 #include "tree.h"
 
-double Particle_Cell_Force_gpu(Coord4* P, int ng, Coord4* C, int nl, Coord3* F, double epsilon, int threadsPerBlock, int compute_energy);
+double Particle_Cell_Force_gpu(InteractionList particle_list, InteractionList cell_list, Coord3* force_xyz, double epsilon, int threadsPerBlock, int compute_energy);
  
 #endif
