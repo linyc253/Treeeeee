@@ -6,8 +6,9 @@ CUDA_DIR = /home/opt/nvidia/hpc_sdk/Linux_x86_64/23.1/cuda
 
 CFLAGS = -Wall -O2
 LD_LIBS = -lm
-# CFLAGS += -DDEBUG
+#CFLAGS += -DDEBUG
 CFLAGS += -DOMP -fopenmp
+#CFLAGS += -DSTB # Serial Tree Build
 
 
 ifdef CUDA_DIR

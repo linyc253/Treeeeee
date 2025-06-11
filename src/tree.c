@@ -570,8 +570,8 @@ double total_force_tree(Particle* P, int npart, int compute_energy){
     gettimeofday(&t0, 0);
     #endif
     
-    #ifdef OMP
     int OMP_NUM_THREADS = get_int("Openmp.THREADS", 1);
+    #if defined OMP && !defined STB
     omp_set_num_threads(OMP_NUM_THREADS);
     Tree T_local[OMP_NUM_THREADS];
     NodePool* Pool[OMP_NUM_THREADS];
@@ -688,7 +688,7 @@ double total_force_tree(Particle* P, int npart, int compute_energy){
     gettimeofday(&t0, 0);
     #endif
 
-    #ifdef OMP
+    #if defined OMP && !defined STB
     #pragma omp parallel
     {
         int tid = omp_get_thread_num();
