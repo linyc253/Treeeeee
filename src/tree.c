@@ -104,6 +104,19 @@ void quadtensor_2_p2x(double quad_tensor[3][3], Node* node){
     }
 }
 
+void p2x_to_quadtensor_add(double quad_tensor[3][3], Node* node, double x_cm[3]){
+    for (int pp = 0; pp < 3; pp++) {
+        double r[3] = { node->p2_x[pp][0] - x_cm[0], node->p2_x[pp][1] - x_cm[1], node->p2_x[pp][2] - x_cm[2] };
+        double singlet = node->m / 3 / 2 * (pow(r[0], 2) + pow(r[1], 2) + pow(r[2], 2));
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                quad_tensor[i][j] += 3 * node->m / 3 / 2 * r[i] * r[j];
+            }
+            quad_tensor[i][i] -= singlet;
+        }
+    }
+}
+
 Tree Initialize_Tree(Particle* P, int npart, NodePool* Pool){
     Tree T;
     T.root = alloc_node(Pool);
@@ -243,39 +256,15 @@ Node* Tree_Merge(Node* node1, Node* node2, Particle* P, NodePool* Pool){
     node1->cost += node2->cost;
     double m = node1->m + node2->m;
     for(int i = 0; i < DIM; i++) node1->x[i] = (node1->x[i] * node1->m + node2->x[i] * node2->m) / m;
-    double tmp_m = node1->m;
-    node1->m = m;
 
     if (poles == 2) {
-        double quad_tensor[3][3];
-        for(int i = 0; i < 3; i++) {
-            for(int j = 0; j < 3; j++) {
-                quad_tensor[i][j] = 0;
-            }
-        }
-        for (int pp = 0; pp < 3; pp++) {
-            double r[3] = { node1->p2_x[pp][0] - node1->x[0], node1->p2_x[pp][1] - node1->x[1], node1->p2_x[pp][2] - node1->x[2] };
-            double singlet = tmp_m / 3 / 2 * (pow(r[0], 2) + pow(r[1], 2) + pow(r[2], 2));
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    quad_tensor[i][j] += 3 * tmp_m / 3 / 2 * r[i] * r[j];
-                }
-                quad_tensor[i][i] -= singlet;
-            }
-        }
-        for (int pp = 0; pp < 3; pp++) {
-            double r[3] = { node2->p2_x[pp][0] - node1->x[0], node2->p2_x[pp][1] - node1->x[1], node2->p2_x[pp][2] - node1->x[2] };
-            double singlet = node2->m / 3 / 2 * (pow(r[0], 2) + pow(r[1], 2) + pow(r[2], 2));
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    quad_tensor[i][j] += 3 * node2->m / 3 / 2 * r[i] * r[j];
-                }
-                quad_tensor[i][i] -= singlet;
-            }
-        }
-        
+        double quad_tensor[3][3] = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+        p2x_to_quadtensor_add(quad_tensor, node1, node1->x);
+        p2x_to_quadtensor_add(quad_tensor, node2, node1->x);        
         quadtensor_2_p2x(quad_tensor, node1);
     }
+
+    node1->m = m;
 
     return node1;
 }
