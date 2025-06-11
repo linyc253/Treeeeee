@@ -465,7 +465,13 @@ double compute_force(InteractionList particle_list, InteractionList cell_list, C
     return V;
 }
 
-
+void list_append(InteractionList* list, double x[3], double m){
+    for (int i = 0; i < 3; i++) {
+        list->xyzm[list->n].x[i] = x[i];
+    }
+    list->xyzm[list->n].m = m;
+    list->n += 1;
+}
 
 // fill particle coordinates and mass to grouping array
 void fill_xyzm(Node* node, Particle* P, InteractionList* particle_list) {
@@ -474,11 +480,7 @@ void fill_xyzm(Node* node, Particle* P, InteractionList* particle_list) {
     }
     if (node->npart == 1) {
         particle_list->particle_indices[particle_list->n] = node->i;
-        for (int i = 0; i < 3; i++) {
-            particle_list->xyzm[particle_list->n].x[i] = P[node->i].x[i];
-        }
-        particle_list->xyzm[particle_list->n].m = P[node->i].m;
-        particle_list->n += 1;
+        list_append(particle_list, P[node->i].x, P[node->i].m);
     }
     else {
         for (int i = 0; i < 1 << DIM; i++) {
@@ -517,11 +519,7 @@ void traverse_node(Node* node, Node* group_node, InteractionList* cell_list, int
         return;
     }
     if (node->npart == 1) {
-        for (int j = 0; j < 3; j++) {
-            cell_list->xyzm[cell_list->n].x[j] = node->x[j];
-        }
-        cell_list->xyzm[cell_list->n].m = node->m;
-        cell_list->n += 1;
+        list_append(cell_list, node->x, node->m);
         return;
     }
 
@@ -532,19 +530,11 @@ void traverse_node(Node* node, Node* group_node, InteractionList* cell_list, int
     r = sqrt(r) - sqrt((double)DIM) * (group_node->D) / 2;
     if (node->D / r < theta && r > 0) {
         if (poles == 1) {
-            for (int j = 0; j < 3; j++) {
-                cell_list->xyzm[cell_list->n].x[j] = node->x[j];
-            }
-            cell_list->xyzm[cell_list->n].m = node->m;
-            cell_list->n += 1;
+            list_append(cell_list, node->x, node->m);
         }
         else if (poles == 2) {
             for (int pp = 0; pp < 3; pp++) {
-                for (int j = 0; j < 3; j++) {
-                    cell_list->xyzm[cell_list->n].x[j] = node->p2_x[pp][j];
-                }
-                cell_list->xyzm[cell_list->n].m = node->m / 3;
-                cell_list->n += 1;
+                list_append(cell_list, node->p2_x[pp], node->m / 3);
             }
         }
     }
