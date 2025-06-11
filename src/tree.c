@@ -257,15 +257,15 @@ Node* Tree_Merge(Node* node1, Node* node2, Particle* P, NodePool* Pool){
     double m = node1->m + node2->m;
     for(int i = 0; i < DIM; i++) node1->x[i] = (node1->x[i] * node1->m + node2->x[i] * node2->m) / m;
 
+    if (poles == 1) node1->m = m;
     if (poles == 2) {
-        double quad_tensor[3][3] = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+        double quad_tensor[3][3] = {0};
         p2x_to_quadtensor_add(quad_tensor, node1, node1->x);
-        p2x_to_quadtensor_add(quad_tensor, node2, node1->x);        
+        p2x_to_quadtensor_add(quad_tensor, node2, node1->x);
+        node1->m = m;
         quadtensor_2_p2x(quad_tensor, node1);
     }
-
-    node1->m = m;
-
+    
     return node1;
 }
 
@@ -353,13 +353,12 @@ long long Set_Costzone(Node* node, Particle* P, long long cost, long long cost_t
 }
 
 // compute quadrupole tensor and pseudoparticle positions
-int compute_quadrupole(Node* node, Particle* particles, int depth){
+int compute_quadrupole(Node* node, Particle* particles){
     if(node == NULL) {
         return -1;
     }
     // for single particle
     if(node->npart == 1){
-        node->cost = (long long)depth;
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 3; j++) {
                 node->p2_x[i][j] = node->x[j];
@@ -369,28 +368,13 @@ int compute_quadrupole(Node* node, Particle* particles, int depth){
     // sum over particles
     else{
         // initialise
-        node->cost = 0;
-        double quad_tensor[3][3];
-        for(int i = 0; i < 3; i++) {
-            for(int j = 0; j < 3; j++) {
-                quad_tensor[i][j] = 0;
-            }
-        }
+        double quad_tensor[3][3] = {0};
+
         // sum over all particles inside
         for(int p_index = 0; p_index < 1<<DIM; p_index++) {
             Node* child = node->children[p_index];
-            if(compute_quadrupole(child, particles, depth + 1) != -1){
-                node->cost += node->children[p_index]->cost;
-                for (int pp = 0; pp < 3; pp++) {
-                    double r[3] = { child->p2_x[pp][0] - node->x[0], child->p2_x[pp][1] - node->x[1], child->p2_x[pp][2] - node->x[2] };
-                    double singlet = child->m / 3 / 2 * (pow(r[0], 2) + pow(r[1], 2) + pow(r[2], 2));
-                    for (int i = 0; i < 3; i++) {
-                        for (int j = 0; j < 3; j++) {
-                            quad_tensor[i][j] += 3 * child->m / 3 / 2 * r[i] * r[j];
-                        }
-                        quad_tensor[i][i] -= singlet;
-                    }
-                }
+            if(compute_quadrupole(child, particles) != -1){
+                p2x_to_quadtensor_add(quad_tensor, child, node->x);
             }
         }
 
@@ -592,7 +576,7 @@ double total_force_tree(Particle* P, int npart, int compute_energy){
         T_local[tid] = Tree_Build(P, npart, tid, Pool[tid]);
         Compute_m_and_x(T_local[tid].root, P, 0);
         if (poles == 2) {
-            compute_quadrupole(T_local[tid].root, P, 0);
+            compute_quadrupole(T_local[tid].root, P);
         }
 
         #pragma omp barrier
@@ -638,7 +622,7 @@ double total_force_tree(Particle* P, int npart, int compute_energy){
     int poles = get_int("Tree.POLES", 1);
     Compute_m_and_x(T.root, P, 0);
     if (poles == 2){
-        compute_quadrupole(T.root, P, 0);
+        compute_quadrupole(T.root, P);
     }
     #endif
     
