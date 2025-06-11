@@ -370,7 +370,6 @@ int compute_quadrupole(Node* node, Particle* particles, int depth){
     }
     // for single particle
     if(node->npart == 1){
-        node->cost = (long long)depth;
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 3; j++) {
                 node->p2_x[i][j] = node->x[j];
@@ -380,7 +379,6 @@ int compute_quadrupole(Node* node, Particle* particles, int depth){
     // sum over particles
     else{
         // initialise
-        node->cost = 0;
         double quad_tensor[3][3];
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 3; j++) {
@@ -391,7 +389,6 @@ int compute_quadrupole(Node* node, Particle* particles, int depth){
         for(int p_index = 0; p_index < 1<<DIM; p_index++) {
             Node* child = node->children[p_index];
             if(compute_quadrupole(child, particles, depth + 1) != -1){
-                node->cost += node->children[p_index]->cost;
                 for (int pp = 0; pp < 3; pp++) {
                     double r[3] = { child->p2_x[pp][0] - node->x[0], child->p2_x[pp][1] - node->x[1], child->p2_x[pp][2] - node->x[2] };
                     double singlet = child->m / 3 / 2 * (pow(r[0], 2) + pow(r[1], 2) + pow(r[2], 2));
