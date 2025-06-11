@@ -686,9 +686,9 @@ double total_force_tree(Particle* P, int npart, int compute_energy){
         
         #ifdef CUDA
         int threadsPerBlock = get_int("GPU.threadsPerBlock", 64);
-        V = Particle_Cell_Force_gpu(particle_list, cell_list, force_xyz, epsilon, threadsPerBlock, compute_energy);
+        V += Particle_Cell_Force_gpu(particle_list, cell_list, force_xyz, epsilon, threadsPerBlock, compute_energy);
         #else
-        V = compute_force(particle_list, cell_list, force_xyz, epsilon, compute_energy);
+        V += compute_force(particle_list, cell_list, force_xyz, epsilon, compute_energy);
         #endif
 
         if(!compute_energy) Copy_Force(particle_list, force_xyz, P);
