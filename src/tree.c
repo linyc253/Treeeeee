@@ -542,16 +542,6 @@ void Copy_Force(InteractionList particle_list, Coord3* force_xyz, Particle* P){
     }
 }
 
-// Set all the force to zero
-void Zero_Force(Particle* P, int npart){
-    for(int i = 0; i < npart; i++){
-        for(int j = 0; j < DIM; j++) { 
-            P[i].f[j] = 0.0; 
-        }
-    }
-    return;
-}
-
 // Main routine to calculate the tree force
 double total_force_tree(Particle* P, int npart, int compute_energy){
     // ---------------1. Build the Tree---------------
