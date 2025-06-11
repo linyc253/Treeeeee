@@ -1,5 +1,5 @@
 ### You need to modify 'python' to your default python executable
-PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
+PYTHON=python
 
 ### Generate data (modfy N below)
 $PYTHON Initial_generator.py -N 10000 > Initial.dat

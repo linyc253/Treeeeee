@@ -1,6 +1,5 @@
 ### You need to modify 'python' to your default python executable
-PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
-# PYTHON=python3
+PYTHON=python
 
 ### Generate data ( for H=1, N_tot = N*(5R+1) )
 $PYTHON Initial_generator.py -N 200000 -S 0.3 -R 0.9 -H 0 > Initial.dat

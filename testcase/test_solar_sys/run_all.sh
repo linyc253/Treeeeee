@@ -1,5 +1,5 @@
 ### You need to modify 'python' to your default python executable
-PYTHON=python3
+PYTHON=python
 
 ### Generate data (modfy N below)
 $PYTHON Initial_generator.py > Initial.dat

@@ -1,1 +1,1 @@
-rm *.dat *.png DATA/*.dat Figure/*.png Input_Parameter.ini log random.mp4
+rm *.dat *.png DATA/*.dat Figure/*.png log random.mp4

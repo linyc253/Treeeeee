@@ -1,6 +1,5 @@
 ### You need to modify 'python' to your default python executable
-PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
-# PYTHON=python3
+PYTHON=python
 
 ### Generate data ( for H=1, N_tot = N*(5R+1) )
 # The current parameter is for "spiral galaxy". The non-spiral galaxy has "-S 0 -R 0.8 -H 0".
