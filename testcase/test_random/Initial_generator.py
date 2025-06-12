@@ -1,7 +1,7 @@
 import random
 import argparse
 
-def generate_nbody_testcase(npart, mass_range=(1.0, 10.0), pos_range=(-100.0, 100.0), vel_range=(-1.0, 1.0)):
+def generate_nbody_testcase(npart, mass_range=(0.1, 0.4), pos_range=(-100.0, 100.0), vel_range=(-1.0, 1.0)):
     masses = [random.uniform(*mass_range) for _ in range(npart)]
     positions = [(random.uniform(*pos_range), random.uniform(*pos_range), random.uniform(*pos_range)) for _ in range(npart)]
     velocities = [(random.uniform(*vel_range), random.uniform(*vel_range), random.uniform(*vel_range)) for _ in range(npart)]

@@ -1,1 +1,1 @@
-rm *.dat *.png Solar_sys.gif Input_Parameter.ini
+rm DATA/*.dat Figure/*.png Input_Parameter.ini solar_sys.mp4 log nohup.out *.dat *.png

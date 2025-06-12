@@ -1,2 +1,1 @@
-rm 000*.dat
-rm Final.dat
+rm 000*.dat Final.dat

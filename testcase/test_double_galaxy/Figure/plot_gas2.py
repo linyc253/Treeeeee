@@ -9,10 +9,13 @@ data_dir = "../DATA/"
 parser = argparse.ArgumentParser()
 parser.add_argument("-F", help = "Number of figures")
 parser.add_argument("-H", default=0, help = "Turn on/off the halo. Default:0.")
+parser.add_argument("-R", default=0.8, help = "Bulge, disk mass distribution ratio. Default:0.8")
 args = parser.parse_args()
 halo = int(args.H)
+bd_rate = float(args.R)
 N_f = int(args.F)/2
 N_f = int(N_f)
+k   = int(1+5*bd_rate)
 
 # Load the file
 for i in range(1+N_f,1+2*N_f):
@@ -23,20 +26,21 @@ for i in range(1+N_f,1+2*N_f):
         lines = f.readlines()
 
     # Parse the number of particles
-    num_particles = int(lines[0].strip())
+    Npt = int(lines[0].strip())
     if halo == 1:
-        num_particles = int(num_particles/5)
+        Npt = int(Npt/k)
 
     # Positions:
     if halo == 1:
         positions = np.array([
             list(map(float, lines[i].strip().split()))
-            for i in range(1 + 5*num_particles, 1 + 6 * num_particles)
+            for i in range(1 + k*Npt, 1 + (k+1) * Npt)
+                
         ])
     else:
         positions = np.array([
             list(map(float, lines[i].strip().split()))
-            for i in range(1 + num_particles, 1 + 2 * num_particles)
+            for i in range(1 + Npt, 1 + 2 * Npt)
         ])
         
     # Create a new figure
