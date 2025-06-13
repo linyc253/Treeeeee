@@ -4,10 +4,16 @@ First, clone by the following command
 git clone https://github.com/linyc253/Treeeeee.git
 cd Treeeeee
 ```
-To compile the code, modify the relevant library directories and flags and execute make.
+To compile the code, first configure by
+```
+./configure.sh --enable-gpu --enable-openmp
+```
+Depending on your system, you might need to specify the CUDA directory manually `--cuda-home=/your_path_to_cuda/cuda` in the command above. Then, build the program by
 ```
 make
 ```
+(whenever you modify the compiler option, please do `make clean` before `make`)
+
 Alternatively, use CMake by executing the following
 ```
 cmake -S . -B build && cmake --build build
