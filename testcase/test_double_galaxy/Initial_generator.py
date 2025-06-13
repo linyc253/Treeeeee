@@ -7,25 +7,25 @@ M = 1000                    # total mass
 a = 250                     # disk scale radius
 b = 35                      # disk scale height
 c = 50                      # bulge scale radius
-e = 4*c                     # halo scale radius
+arm = 2                     # number of spiral arms
 distance = 3000             # distance between the two galaxy
 angle    = 0                # the incline angle of two galaxy (rad)
 
-
-
 parser = argparse.ArgumentParser()
 parser.add_argument("-N", help = "Number of particles")
-parser.add_argument("-S", default=0, help = "Turn on/off the spiral. Default:0.")
-parser.add_argument("-H", default=0, help = "Turn on/off the halo. Default:0.")
+parser.add_argument("-R", default=0.8, help = "Bulge, disk mass distribution ratio. Default:0.8")
+parser.add_argument("-S", default=0,   help = "The strength of spiral. Default:0")
+parser.add_argument("-H", default=0,   help = "Turn on/off the halo. Default:0")
 args = parser.parse_args()
+bd_rate = float(args.R)             # bulge, disk mass distribution ratio
+spiral  = float(args.S)             # The strength of spiral
 N       = int(args.N)               # number of total particles
-spiral  = int(args.S)               # The switch of spiral
 halo    = int(args.H)               # The switch of halo
-distance = int(distance/2)
 
 # Calculated quantities
 m = M/N                     # mass of each particle
-N_d = int(np.floor(0.8 * N))
+e = 5*bd_rate*c             # halo scale radius
+N_d = int(np.floor(bd_rate * N))
 N_b = N - N_d
 N_h = 5 * N_d
 M_d = M * N_d/N
@@ -35,7 +35,7 @@ M_h = 5 * M_d
 # Calculate Miyamoto–Nagai disk with N_d particles
 def rho_mn(r, z, M, a, b):
     """
-    Miyamoto-Nagai disk *density* ρ(r,z).
+    Miyamoto-Nagai disk *density* rho(r,z).
     """
     d = np.sqrt(b*b + z*z)
     num = b**2 * M * (a*r**2 + (a + 3*d)*(a + d)**2)
@@ -91,7 +91,7 @@ def sample_mn_disk_rejection(N, M, a, b, c=None, d=None,
         u3 = np.random.rand(r_cand.size)
         keep = u3 < acc_prob
         rs = r_cand[keep]
-        phs= phi[keep] + spiral * 0.01 * np.cos(2*phi[keep])
+        phs= phi[keep] + spiral * np.cos(arm*phi[keep])
         zs = z_cand[keep]
 
         xs = rs * np.cos(phs)
@@ -153,8 +153,7 @@ def Sigma(R, M, a, b):
          / (B**3 * (R**2 + (a + B)**2)**(5/2))
 
 def sigma_R(r):
-    Q0 = 1.5
-    # Q_R = Q0 + spiral*0.5*np.tanh((r-5*a)/a)
+    Q0 = 1.2
     Q_R = Q0 + (0.4*np.exp(-(r/0.5/a)**2) + 0.4*(r>3*a)) * spiral
     return 3.36*G*Sigma(r,M_d,a,b)*Q_R/np.sqrt(Kappa(r))
 
@@ -200,12 +199,13 @@ def sample_velocity(N,v_esc):
             samples.append( (vxs,vys,vzs) )
     return np.array(samples[:N])
         
-vec = (2*G*M_b)**0.5 * (r**2 + c**2)**(-0.25)
+vec = (2*G*M_b)**0.5 * (r**2 + c**2)**(-0.25) + halo*(2*G*M_h)**0.5 * (r**2 + e**2)**(-0.25)
 v_bulge = sample_velocity(N_b,vec)
 
 # Generate the velocity of the halo particle
 if halo == 1:
-    vec = (2*G*M_h)**0.5 * (r**2 + e**2)**(-0.25)
+    vec = (2*G*M_h)**0.5 * (r**2 + e**2)**(-0.25) + (2*G*M_b)**0.5 * (r**2 + c**2)**(-0.25)\
+        + (2*G*M_d)**0.5 * (r**2 + (a+b)**2)**(-0.25)
     v_halo = sample_velocity(N_h,vec)
 
 # Copy the first galaxy to generate the second galaxy
@@ -229,7 +229,7 @@ if halo == 1:
 
 
 # Print the result formally
-if halo == 1: N = int(5*N)
+if halo == 1: N = int((1+5*bd_rate)*N)
 
 print(2*N)
 for i in range(2*N):

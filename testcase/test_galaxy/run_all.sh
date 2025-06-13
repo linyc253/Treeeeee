@@ -1,9 +1,10 @@
 ### You need to modify 'python' to your default python executable
-PYTHON=/home/linyc253/.conda/envs/env_1/bin/python
-# PYTHON=python3
+PYTHON=python
 
-### Generate data (modfy N below)
-$PYTHON Initial_generator.py -N 1000 -S 1 -H 1 > Initial.dat
+### Generate data ( for H=1, N_tot = N*(5R+1) )
+# The current parameter is for "spiral galaxy". The non-spiral galaxy has "-S 0 -R 0.8 -H 0".
+$PYTHON Initial_generator.py -N 200000 -S 0.3 -R 0.9 -H 0 > Initial.dat
+$PYTHON plot.py -R 0.9
 
 ### Run Treeeeee setting
     cat > Input_Parameter.ini<<!
@@ -12,13 +13,13 @@ DIM = 3                      # Dimension of the system (default: 3)
 METHOD = 2                   # Method 1:brute_force 
                              #        2:tree_algo (default)
 PARTICLE_FILE = Initial.dat  # filename of particle file (default: Initial.dat)
-T_TOT = 3200                 # total evolution time
+T_TOT = 4000                 # total evolution time
 DT = 1.0                     # maximal time interval
-ETA = 20.0                   # parameter that controls the accuracy and stability of the timestep in simulations
+ETA = 5e-3                   # parameter that controls the accuracy and stability of the timestep in simulations
 TIME_PER_OUT = 4             # Output 00xxx.dat in every STEP_PER_OUT steps
-EPSILON = 1e-3               # softening length used to prevent singularities and numerical instabilities in particle interactions
+EPSILON = 0.14               # softening length used to prevent singularities and numerical instabilities in particle interactions
 OUTDIR = DATA                # The output file should be put in this folder
-# RESTART = 800                # Continue the calculation at this step
+# RESTART = 800              # Continue the calculation at this step
 
 [Tree]
 THETA = 0.4                  # Critical angle
@@ -26,17 +27,18 @@ POLES = 1
 NCRIT = 1200
 
 [Openmp]
-THREADS = 2
+THREADS = 4
 CHUNK = 1
 !
 ../../bin/treeeeee > log
 
 # Plot galaxy animation
+$PYTHON plot_energy.py
+$PYTHON velocity.py -R 0.9 -H 0
+
 cd Figure
-$PYTHON plot_gas.py -F 800 -H &
-$PYTHON plot_gas2.py -F 800 -H 1 &
+$PYTHON plot_gas.py -F 1000 -R 0.9 -H 0 &
+$PYTHON plot_gas2.py -F 1000 -R 0.9 -H 0 &
 cd ..
 wait
-ffmpeg -framerate 12 -i Figure/%05d.png galaxy.mp4
-#convert Figure/0*.png Galaxy.gif
-$PYTHON velocity.py -H 1
+ffmpeg -framerate 24 -i Figure/%05d.png galaxy.mp4

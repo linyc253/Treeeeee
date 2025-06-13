@@ -1,1 +1,1 @@
-rm -r data Random.gif Initial.dat
+rm *.dat *.png DATA/*.dat Figure/*.png log random.mp4
