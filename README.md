@@ -21,7 +21,8 @@ python plot_energy.py
 The calculation result can be visualized by the python script
 ```
 cd Figure
-python plot_gas.py
+python plot_gas.py -F 200
+cd ..
 ```
 The figures can be converted to GIF
 ```
@@ -29,7 +30,7 @@ convert Figure/*.png random.gif
 ```
 or MP4 movie
 ```
-ffmpeg -framerate 12 -c:v libx264 -pix_fmt yuv420p -i Figure/%05d.png random.mp4
+ffmpeg -framerate 12 -pix_fmt yuv420p -i Figure/%05d.png random.mp4
 ```
 # Parameter file format
 The parameter file should be named as `Input_Parameter.ini`. Use `#` for comment.

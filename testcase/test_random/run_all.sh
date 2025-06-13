@@ -38,4 +38,4 @@ $PYTHON plot_energy.py
 cd Figure
 $PYTHON plot_gas.py -F 200
 cd ..
-ffmpeg -framerate 12 -c:v libx264 -pix_fmt yuv420p -i Figure/%05d.png random.mp4
+ffmpeg -framerate 12 -pix_fmt yuv420p -i Figure/%05d.png random.mp4
