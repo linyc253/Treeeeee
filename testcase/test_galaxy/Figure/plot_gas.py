@@ -35,7 +35,6 @@ for i in range(1,1+N_f):
         positions = np.array([
             list(map(float, lines[i].strip().split()))
             for i in range(1 + k*Npt, 1 + (k+1) * Npt)
-                
         ])
     else:
         positions = np.array([

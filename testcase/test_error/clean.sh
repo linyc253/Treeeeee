@@ -1,1 +1,1 @@
-rm error.png Input_Parameter.ini *.dat
+rm error.pdf Input_Parameter.ini *.dat 
