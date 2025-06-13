@@ -4,10 +4,13 @@ First, clone using the following command
 git clone https://github.com/linyc253/Treeeeee.git
 cd Treeeeee
 ```
+## AutoTool Configure
 To compile the code, modify the relevant library directories and flags in the make file, then execute make.
 ```
 make
 ```
+
+## CMake
 Alternatively, you can also build through CMake by executing the following
 ```
 cmake -S . -B build && cmake --build build
