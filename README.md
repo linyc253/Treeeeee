@@ -8,38 +8,48 @@ Then compile the code by
 cd Treeeeee
 make
 ```
-And execute by
+And run the program by
 ```
 cd testcase/test_random
 python Initial_generator.py -N 10000 > Initial.dat
 ../../bin/treeeeee
 ```
+Firstly, check whether the energy conservation by plotting
+```
+python plot_energy.py
+```
 The calculation result can be visualized by the python script
 ```
 cd Figure
-python plot_gas.py
-convert ../data/*.png Random.gif
+python plot_gas.py -F 200
+cd ..
+```
+The figures can be converted to GIF
+```
+convert Figure/*.png random.gif
+```
+or MP4 movie
+```
+ffmpeg -framerate 12 -pix_fmt yuv420p -i Figure/%05d.png random.mp4
 ```
 # Parameter file format
 The parameter file should be named as `Input_Parameter.ini`. Use `#` for comment.
 ```
 [BasicSetting]
 DIM = 3                      # Dimension of the system (default: 3)
-METHOD = 2                   # Method 1:brute_force 
-                             #        2:tree_algo (default)
+METHOD = 2                   # Method [1] brute_force, [2] tree_algo (default)
 PARTICLE_FILE = Initial.dat  # filename of particle file (default: Initial.dat)
-T_TOT = 50.0                 # total evolution time
-DT = 0.1                     # maximal time interval
-ETA = 10.0                   # parameter that controls the accuracy and stability of the timestep in simulations
-EPSILON = 1e-3               # softening length used to prevent singularities and numerical instabilities in particle interactions
+T_TOT = 100.0                # total evolution time
+DT = 0.05                    # maximal time interval
+ETA = 0.001                  # parameter that controls the accuracy and stability of the timestep in simulations
+EPSILON = 1e-1               # softening length used to prevent singularities and numerical instabilities in particle interactions
 TIME_PER_OUT = 0.5           # Output 00xxx.dat in every \Delta t = TIME_PER_OUT
-OUTDIR = data                # where the output data stored
-#RESTART = 12                 # restart from 00012.dat
+OUTDIR = DATA                # where the output data stored
+#RESTART = 12                # restart from 00012.dat
 
 [Tree]
-THETA = 0.5                  # Critical angle
-POLES = 1                    # 1: dipole (centre of mass)
-                             # 2: quadrupole (3 pseudo-particles)
+THETA = 0.4                  # Critical angle
+POLES = 1                    # [1] dipole, [2] quadrupole
 NCRIT = 1000                 # The max number of particles in a group (for constructing interaction list)
 
 [Openmp]
@@ -47,7 +57,7 @@ THREADS = 4                  # Number of threads
 CHUNK = 1                    # The chunk size in dynamic scheduling
 
 [GPU]
-threadsPerBlock = 128
+threadsPerBlock = 128        # Slightly affect performance (try 32, 64, 128, 256, 512, 1024)
 ```
 # Particle file format
 The particle file (filename should be specified in `Input_Parameter.ini`) must follow the format below
