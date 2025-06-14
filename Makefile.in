@@ -1,25 +1,14 @@
-CC = gcc
+CC = @CC@
+CUDA_DIR = @CUDA_DIR@
 
-# comment this out if you don't use cuda
-CUDA_DIR = /usr/local/cuda-12.8
+CFLAGS = @CFLAGS@
+LD_LIBS = @LD_LIBS@
+NVCC = @NVCC@
 
-
-CFLAGS = -Wall -O2
-LD_LIBS = -lm
-#CFLAGS += -DDEBUG
-CFLAGS += -DOMP -fopenmp
-#CFLAGS += -DSTB # Serial Tree Build
-
-
-ifdef CUDA_DIR
-	CFLAGS += -DCUDA
-	LD_LIBS += -L$(CUDA_DIR)/lib64 -lcudart
-	NVCC = $(CUDA_DIR)/bin/nvcc
-endif
-
-
-# for debugging segmentation fault
-# CFLAGS += -fsanitize=address -g  # useful for segmentation fault
+# Serial Tree Build (for debug)
+#CFLAGS += -DSTB 
+# For debugging segmentation fault (cannot work with cuda)
+#CFLAGS += -fsanitize=address -g
 
 # Parse all the files
 SRC = $(wildcard src/*.c) $(wildcard lib/*.c)

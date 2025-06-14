@@ -1,14 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # Import 3D plotting tools
+import argparse
 
-# Parameter
-N_f = 101
-
+# Read parameter from script
+parser = argparse.ArgumentParser()
+parser.add_argument("-F", help = "Number of figures")
+args = parser.parse_args()
+N_f = int(args.F)
 
 # Load the file
-for i in range(1, N_f):
-    filename = "data/%05d" % i
+for i in range(1, 1+N_f):
+    filename = "%05d" % i
     # Load the file
     with open(filename+".dat", 'r') as f:
         lines = f.readlines()
@@ -35,18 +38,16 @@ for i in range(1, N_f):
     fig = plt.figure(figsize=(8, 8))
     ax = fig.add_subplot(111, projection='3d')
 
-
     # Scatter plot for the positions
-    ax.scatter(
-        positions[:, 0],  # x-coordinates
-        positions[:, 1],  # y-coordinates
-        positions[:, 2],  # z-coordinates
-        c=masses,              # color according to mass
-        cmap='inferno',        # colormap, you can change to 'plasma', 'viridis', 'jet' etc
-        vmin=1.0, vmax=10.0,   # fix color range between 1.0 and 10.0
-        s=1,              # marker size (small for many particles)
-        alpha=0.7         # transparency for better visibility
-    )
+    for i in range(num_particles-1):
+        ax.scatter(
+            positions[i, 0],  # x-coordinates
+            positions[i, 1],  # y-coordinates
+            positions[i, 2],  # z-coordinates
+            s=10,             # marker size (small for many particles)
+            alpha=0.7         # transparency for better visibility
+        )
+    ax.scatter(positions[-1,0], positions[-1,1], positions[-1,2], s=1000, alpha=0.7)
 
     # Set labels
     ax.set_xlabel('X')
@@ -54,13 +55,12 @@ for i in range(1, N_f):
     ax.set_zlabel('Z')
 
     # Fix the axes
-    ax.axes.set_xlim3d(left=-300, right=300)
-    ax.axes.set_ylim3d(bottom=-300, top=300)
-    ax.axes.set_zlim3d(bottom=-300, top=300)
-    ax.set_box_aspect([600,600,600])  # Force cubic aspect ratio
+    ax.axes.set_xlim3d(left=-35, right=35)
+    ax.axes.set_ylim3d(bottom=-35, top=35)
+    ax.axes.set_zlim3d(bottom=-35, top=35)
     
 
     # Optional: set equal aspect ratio (good if your data is physical space)
-    # ax.set_box_aspect([np.ptp(positions[:,0]), np.ptp(positions[:,1]), np.ptp(positions[:,2])])
-    fig.savefig(filename+".png", bbox_inches=None)
+    ax.set_box_aspect([1,1,1])
+    fig.savefig(filename+".png")
     plt.close()

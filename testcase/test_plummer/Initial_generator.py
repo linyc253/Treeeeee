@@ -5,7 +5,7 @@ import argparse
 # Parameters
 G = 1                       # Newton's gravity constant
 a = 20                      # critical radius
-M = 20                      # total mass
+M = 1000                    # total mass
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-N", "--N", help = "Number of particles")

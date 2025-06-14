@@ -1,1 +1,1 @@
-rm DATA/*.dat Figure*.png *.png Input_Parameter.ini Plummer.gif log
+rm DATA/*.dat Figure/*.png *.png Input_Parameter.ini log plummer.mp4 *.dat nohup.out

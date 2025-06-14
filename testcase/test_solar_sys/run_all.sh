@@ -1,5 +1,5 @@
 ### You need to modify 'python' to your default python executable
-PYTHON=python3
+PYTHON=python
 
 ### Generate data (modfy N below)
 $PYTHON Initial_generator.py > Initial.dat
@@ -15,16 +15,24 @@ PARTICLE_FILE = Initial.dat  # filename of particle file (default: Initial.dat)
 T_TOT = 10                   # total evolution time
 DT = 0.02                    # maximal time interval
 ETA = 1.0                    # parameter that controls the accuracy and stability of the timestep in simulations
-TIME_PER_OUT = 0.05           # Output 00xxx.dat in every STEP_PER_OUT steps
+TIME_PER_OUT = 0.05          # Output 00xxx.dat in every STEP_PER_OUT steps
 EPSILON = 1e-4               # softening length used to prevent singularities and numerical instabilities in particle interactions
+OUTDIR = DATA
 
 [Tree]
 THETA = 0.4                  # Critical angle
+POLES = 1
+NCRIT = 1000
 
+[Openmp]
+THREADS = 4
+CHUNK = 1
 !
-../../bin/treeeeee
+../../bin/treeeeee > log
 
-### Plot plummer animation (N = T_TOT/(DT*STEP_PER_OUT)+1)
-$PYTHON Energy.py -N 201
-$PYTHON plot.py -N 201
-convert 0*.png Solar_sys.gif
+### Plot plummer animation
+$PYTHON plot_energy.py
+cd Figure
+$PYTHON plot.py -F 200
+cd ..
+ffmpeg -framerate 12 -i Figure/%05d.png solar_sys.mp4

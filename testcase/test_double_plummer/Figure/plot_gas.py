@@ -7,9 +7,10 @@ import os
 # Parameter
 data_dir = "../DATA/"
 parser = argparse.ArgumentParser()
-parser.add_argument("-N")
+parser.add_argument("-F")
 args = parser.parse_args()
-N_f = int(args.N)
+N_f = int(args.F)/2
+N_f = int(N_f)
 
 # Load the file
 for i in range(1, 1+N_f):
