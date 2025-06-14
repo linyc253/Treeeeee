@@ -6,3 +6,4 @@ build/*
 *.gif
 .vscode
 *.mp4
+Makefile

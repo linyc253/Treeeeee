@@ -25,7 +25,7 @@ Additional cmake options can be turned on, `OMP` for OpenMP, `CUDA` for cuda sup
 cmake -DOMP=ON -DCUDA=ON -S . -B build && cmake --build build
 ```
 
-# How to Run
+## How to Run
 Once compiled you can test by executing the following to run a test case.
 ```
 cd testcase/test_random
